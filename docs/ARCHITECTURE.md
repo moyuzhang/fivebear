@@ -4,11 +4,18 @@
 ```mermaid
 graph TD
     A[用户终端] --> B[API网关]
-    B --> C[认证服务]
-    B --> D[业务处理集群]
-    D --> E[(核心数据库)]
-    D --> F[缓存集群]
-    F --> G[(Redis)]
+    B -->|路由| C[认证服务]
+    B -->|业务请求| D[业务处理集群]
+    D -->|持久化| E[(核心数据库)]
+    D -->|缓存读写| F[缓存集群]
+    F -->|数据存储| G[(Redis)]
+    style A fill:#90EE90,stroke:#333
+    style B fill:#87CEEB,stroke:#333
+    style C fill:#FFB6C1,stroke:#333
+    style D fill:#D3D3D3,stroke:#333
+    style E fill:#FFD700,stroke:#333
+    style F fill:#FFA07A,stroke:#333
+    style G fill:#98FB98,stroke:#333
 ```
 
 ## 2. 技术栈
@@ -58,13 +65,28 @@ sequenceDiagram
 ```mermaid
 flowchart TB
     subgraph 公有云
-        A[CDN] --> B[负载均衡]
-        B --> C[API集群]
-        C --> D[数据库主从]
+        A[CDN] -->|静态资源| B[负载均衡]
+        B -->|流量分发| C[API集群]
+        C -->|读写分离| D[数据库代理]
+        D -->|主库写入| E[(PostgreSQL主库)]
+        D -->|从库读取| F[(PostgreSQL只读副本)]
     end
     subgraph 私有云
-        E[监控系统] --> F[日志中心]
+        G[Prometheus] -->|指标采集| H[API集群]
+        I[Elastic Agent] -->|日志收集| H
+        J[Jaeger] -->|链路追踪| H
+        H -->|监控数据| K[Grafana]
+        style K fill:#F7941D,stroke:#333
     end
+    style A fill:#90EE90,stroke:#333
+    style B fill:#87CEEB,stroke:#333
+    style C fill:#D3D3D3,stroke:#333
+    style D fill:#FFB6C1,stroke:#333
+    style E fill:#FFD700,stroke:#333
+    style F fill:#98FB98,stroke:#333
+    style G fill:#FFA07A,stroke:#333
+    style I fill:#9370DB,stroke:#333
+    style J fill:#00BFFF,stroke:#333
 ```
 
 ## 5. 数据流向
