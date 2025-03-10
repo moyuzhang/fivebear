@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>500 - Server Error</title>
+    <style>
+        body { font-family: Arial, sans-serif; text-align: center; padding: 50px; }
+        h1 { color: #dc3545; font-size: 48px; }
+        p { font-size: 24px; }
+        .error-details { 
+            max-width: 800px;
+            margin: 20px auto;
+            padding: 20px;
+            background-color: #f8d7da;
+            border-radius: 5px;
+            text-align: left;
+        }
+    </style>
+</head>
+<body>
+    <h1>500 Error</h1>
+    <p>Sorry, something went wrong on our server.</p>
+    <div th:if="${error}" class="error-details">
+        <p><strong>Error:</strong> <span th:text="${error}">No error message available</span></p>
+        <p><strong>Status:</strong> <span th:text="${status}">Unknown status</span></p>
+        <p><strong>Path:</strong> <span th:text="${path}">Unknown path</span></p>
+        <p><strong>Timestamp:</strong> <span th:text="${timestamp}">Unknown timestamp</span></p>
+    </div>
+    <p><a href="/">Return to Home Page</a></p>
+</body>
+</html>
