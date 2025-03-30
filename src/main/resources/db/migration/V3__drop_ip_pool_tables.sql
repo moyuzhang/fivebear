@@ -1,0 +1,2 @@
+DROP TABLE IF EXISTS ip_pool;
+DROP TABLE IF EXISTS ip_pool_config; 

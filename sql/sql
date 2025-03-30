@@ -1,0 +1,1 @@
+mysqldump -u root -p --no-data --skip-comments fivebear_db > "d:\FiveBear\sql\fivebear_structure.sql"

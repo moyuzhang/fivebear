@@ -1,0 +1,29 @@
+{
+  "name": "frontend",
+  "private": true,
+  "version": "0.0.0",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview"
+  },
+  "dependencies": {
+    "@element-plus/icons-vue": "^2.3.1",
+    "@types/crypto-js": "^4.2.2",
+    "@types/md5": "^2.3.5",
+    "@types/node": "^22.13.10",
+    "ant-design-vue": "^4.2.6",
+    "axios": "^1.6.7",
+    "crypto-js": "^4.2.0",
+    "element-plus": "^2.5.6",
+    "md5": "^2.3.0",
+    "pinia": "^3.0.1",
+    "vue": "^3.4.19",
+    "vue-router": "^4.3.0"
+  },
+  "devDependencies": {
+    "@vitejs/plugin-vue": "^5.0.4",
+    "vite": "^5.1.4"
+  }
+}

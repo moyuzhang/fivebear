@@ -1,0 +1,12 @@
+# MQTT配置
+mqtt:
+  broker:
+    url: tcp://localhost:1883
+  client:
+    id: fivebear-mqtt-client-${random.uuid}
+  username: admin
+  password: public
+  topics:
+    - test/topic
+    - system/status
+    - device/data 

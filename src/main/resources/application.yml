@@ -1,0 +1,226 @@
+spring:
+  application:
+    name: fivebear-system
+  profiles:
+    include: mqtt
+  main:
+    allow-bean-definition-overriding: true
+  datasource:
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    url: jdbc:mysql://localhost:3306/fivebear_db?useSSL=false&serverTimezone=Asia/Shanghai&useUnicode=true&characterEncoding=UTF-8&allowPublicKeyRetrieval=true
+    username: root
+    password: root3306
+    hikari:
+      connection-test-query: SELECT 1
+      validation-timeout: 3000
+      maximum-pool-size: 10
+      minimum-idle: 5
+      idle-timeout: 300000
+      connection-timeout: 20000
+  jpa:
+    database-platform: org.hibernate.dialect.MySQLDialect
+    show-sql: true
+    hibernate:
+      ddl-auto: update
+    properties:
+      hibernate:
+        format_sql: true
+    open-in-view: false
+  jackson:
+    date-format: yyyy-MM-dd HH:mm:ss
+    time-zone: GMT+8
+    serialization:
+      write-dates-as-timestamps: false
+  servlet:
+    multipart:
+      max-file-size: 10MB
+      max-request-size: 100MB
+  mvc:
+    pathmatch:
+      matching-strategy: ant_path_matcher
+    throw-exception-if-no-handler-found: true
+  web:
+    resources:
+      add-mappings: false
+      cache:
+        period: 0
+      chain:
+        cache: false
+  thymeleaf:
+    prefix: classpath:/templates/
+    suffix: .html
+    cache: false
+    mode: HTML
+    encoding: UTF-8
+    check-template-location: true
+  security:
+    user:
+      name: admin
+      password: 123456
+  data:
+    jpa:
+      repositories:
+        enabled: true
+        base-packages: com.fivebear.fivebear_system.repository
+        include-filter:
+          - type: assignable
+            value: org.springframework.data.jpa.repository.JpaRepository
+    redis:
+      repositories:
+        enabled: true
+        base-packages: com.fivebear.fivebear_system.repository.redis
+        include-filter:
+          - type: assignable
+            value: org.springframework.data.keyvalue.repository.KeyValueRepository
+    key-value:
+      repositories:
+        enabled: true
+        base-packages: com.fivebear.fivebear_system.repository
+        include-filter:
+          - type: assignable
+            value: org.springframework.data.keyvalue.repository.KeyValueRepository
+        exclude-filter:
+          - type: assignable
+            value: org.springframework.data.jpa.repository.JpaRepository
+
+server:
+  port: 8080
+  servlet:
+    context-path: /
+  tomcat:
+    uri-encoding: UTF-8
+    max-http-form-post-size: 2MB
+    max-swallow-size: 2MB
+    max-http-header-size: 8KB
+    connection-timeout: 20000
+    max-connections: 8192
+    accept-count: 100
+    threads:
+      max: 200
+      min-spare: 30
+    connection-properties: socket.soKeepAlive=true;socket.soTimeout=60000
+
+logging:
+  config: classpath:logback-spring.xml
+  file:
+    path: logs
+    name: app
+  level:
+    root: INFO
+    com.FiveBear.fivebear_system: DEBUG
+    org.springframework.security: DEBUG
+    org.springframework.web: INFO
+    org.hibernate: WARN
+    org.hibernate.SQL: DEBUG
+    org.hibernate.type: WARN
+  charset:
+    console: UTF-8
+    file: UTF-8
+  pattern:
+    console: "%d{yyyy-MM-dd HH:mm:ss} [%thread] %-5level %logger{36} - %msg%n"
+    file: "%d{yyyy-MM-dd HH:mm:ss} [%thread] %-5level %logger{36} - %msg%n"
+  logback:
+    rollingpolicy:
+      max-file-size: 10MB
+      max-history: 30
+
+# Swagger配置
+knife4j:
+  enable: true
+  setting:
+    language: zh-CN
+    enableSwaggerModels: true
+    enableDocumentManage: true
+    swaggerModelName: 实体类列表
+    basic:
+      enable: false
+    enableVersion: false
+    enableReloadCacheParameter: false
+    enableAfterScript: true
+    enableFilterMultipartApiMethodType: POST
+    enableFilterMultipartApis: false
+    enableRequestCache: true
+    enableHost: false
+    enableHostText: 
+    enableHomeCustom: false
+    homeCustomLocation: 
+    enableSearch: true
+    enableFooter: false
+    enableFooterCustom: false
+    footerCustomContent: 
+    enableDynamicParameter: false
+    enableDebug: true
+    enableOpenApi: true
+    enableGroup: true
+  cors: true
+  production: false
+  basic:
+    enable: false
+
+# Redis配置
+data:
+  redis:
+    host: localhost
+    port: 6379
+    password: root6379
+    database: 0
+    timeout: 10000ms
+    lettuce:
+      pool:
+        max-active: 8
+        max-wait: -1ms
+        max-idle: 8
+        min-idle: 0
+
+# IP池配置
+ip:
+  pool:
+    crawler:
+      enabled: true
+      thread-pool-size: 5
+      scheduler-pool-size: 30
+      initial-delay: 20
+      period: 100
+    redis:
+      expire-time: 180  # 3分钟
+      list-key: proxy:ip:list
+      set-key: proxy:ip:set
+    validate:
+      max-validate-count: 10
+      min-available-rate: 50
+      validate-interval: 300  # 5分钟
+      timeout: 5000  # 5秒
+
+# 代理配置
+proxy:
+  fetch:
+    timeout: 10000
+    retry:
+      maxAttempts: 3
+    connect-timeout: 10000
+    read-timeout: 10000
+    retry-max-attempts: 3
+    retry-delay: 5000
+  test:
+    url: https://www.baidu.com
+
+# Actuator配置
+management:
+  endpoints:
+    web:
+      exposure:
+        include: "*"
+
+# MQTT配置
+mqtt:
+  broker:
+    url: tcp://localhost:1883
+  client:
+    id: fivebear-mqtt-client-${random.uuid}
+  username: admin
+  password: public
+  topics:
+    - test/topic
+    - system/status
+    - device/data
+
