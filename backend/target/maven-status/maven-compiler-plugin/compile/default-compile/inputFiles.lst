@@ -2,9 +2,9 @@ D:\FiveBear\backend\src\main\java\com\fivebear\admin\controller\AdminController.
 D:\FiveBear\backend\src\main\java\com\fivebear\admin\entity\Admin.java
 D:\FiveBear\backend\src\main\java\com\fivebear\admin\service\AdminService.java
 D:\FiveBear\backend\src\main\java\com\fivebear\admin\service\impl\AdminServiceImpl.java
-D:\FiveBear\backend\src\main\java\com\fivebear\auth\controller\AdminController.java
 D:\FiveBear\backend\src\main\java\com\fivebear\auth\controller\AuthController.java
 D:\FiveBear\backend\src\main\java\com\fivebear\auth\controller\LoginSecurityController.java
+D:\FiveBear\backend\src\main\java\com\fivebear\auth\controller\SystemController.java
 D:\FiveBear\backend\src\main\java\com\fivebear\auth\entity\LoginRequest.java
 D:\FiveBear\backend\src\main\java\com\fivebear\auth\entity\LoginResponse.java
 D:\FiveBear\backend\src\main\java\com\fivebear\auth\entity\User.java

@@ -20,6 +20,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -210,6 +211,94 @@ public class SystemController {
         } catch (Exception e) {
             result.put("code", 500);
             result.put("message", "获取活动日志失败: " + e.getMessage());
+            result.put("timestamp", System.currentTimeMillis());
+        }
+        
+        return ResponseEntity.ok(result);
+    }
+
+    @Operation(summary = "检查管理员用户状态")
+    @GetMapping("/check-admin")
+    public ResponseEntity<?> checkAdmin() {
+        Map<String, Object> result = new HashMap<>();
+        
+        try {
+            // 查询管理员用户信息
+            List<Map<String, Object>> admins = jdbcTemplate.queryForList(
+                "SELECT id, username, nickname, email, role_id, status, deleted, created_at " +
+                "FROM users WHERE role_id = 1 ORDER BY created_at"
+            );
+            
+            result.put("code", 200);
+            result.put("message", "查询成功");
+            result.put("data", Map.of(
+                "adminCount", admins.size(),
+                "admins", admins
+            ));
+            
+        } catch (Exception e) {
+            result.put("code", 500);
+            result.put("message", "查询管理员失败: " + e.getMessage());
+            result.put("timestamp", System.currentTimeMillis());
+        }
+        
+        return ResponseEntity.ok(result);
+    }
+
+    @Operation(summary = "初始化管理员用户")
+    @PostMapping("/init-admin")
+    public ResponseEntity<?> initAdmin() {
+        Map<String, Object> result = new HashMap<>();
+        
+        try {
+            // 检查是否已存在管理员用户
+            Integer adminCount = jdbcTemplate.queryForObject(
+                "SELECT COUNT(*) FROM users WHERE role_id = 1 AND deleted = false", 
+                Integer.class
+            );
+            
+            if (adminCount != null && adminCount > 0) {
+                result.put("code", 200);
+                result.put("message", "管理员用户已存在");
+                result.put("data", Map.of("adminExists", true));
+                return ResponseEntity.ok(result);
+            }
+            
+            // 创建默认管理员用户
+            // 密码: admin123 (BCrypt加密)
+            String encryptedPassword = "$2a$10$N.zmdr9k7uOCQb376NoUnuTJ8iKV4o2eZKtbkyy/QGCnwKfZhp2xG";
+            
+            // 先确保角色表有数据
+            jdbcTemplate.update(
+                "INSERT IGNORE INTO roles (id, role_name, description, status, created_at, updated_at) VALUES " +
+                "(1, 'ADMIN', '系统管理员', 1, NOW(), NOW()), " +
+                "(2, 'SUPERVISOR', '系统总监', 1, NOW(), NOW()), " +
+                "(3, 'MAJOR_SHAREHOLDER', '系统大股东', 1, NOW(), NOW())"
+            );
+            
+            // 创建管理员用户
+            int rowsAffected = jdbcTemplate.update(
+                "INSERT INTO users (username, nickname, email, password, role_id, status, deleted, created_at, updated_at) " +
+                "VALUES (?, ?, ?, ?, ?, ?, ?, NOW(), NOW())",
+                "admin", "系统管理员", "admin@fivebear.com", encryptedPassword, 1, 1, false
+            );
+            
+            if (rowsAffected > 0) {
+                result.put("code", 200);
+                result.put("message", "管理员用户创建成功");
+                result.put("data", Map.of(
+                    "username", "admin",
+                    "password", "admin123",
+                    "note", "请立即修改默认密码"
+                ));
+            } else {
+                result.put("code", 500);
+                result.put("message", "管理员用户创建失败");
+            }
+            
+        } catch (Exception e) {
+            result.put("code", 500);
+            result.put("message", "初始化管理员失败: " + e.getMessage());
             result.put("timestamp", System.currentTimeMillis());
         }
         

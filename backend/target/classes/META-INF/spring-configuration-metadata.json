@@ -9,19 +9,19 @@
       "name": "fivebear.jwt",
       "type": "com.fivebear.common.config.FiveBearProperties$Jwt",
       "sourceType": "com.fivebear.common.config.FiveBearProperties",
-      "sourceMethod": "public com.fivebear.common.config.FiveBearProperties.Jwt getJwt() "
+      "sourceMethod": "getJwt()"
     },
     {
       "name": "fivebear.system",
       "type": "com.fivebear.common.config.FiveBearProperties$System",
       "sourceType": "com.fivebear.common.config.FiveBearProperties",
-      "sourceMethod": "public com.fivebear.common.config.FiveBearProperties.System getSystem() "
+      "sourceMethod": "getSystem()"
     },
     {
       "name": "fivebear.upload",
       "type": "com.fivebear.common.config.FiveBearProperties$Upload",
       "sourceType": "com.fivebear.common.config.FiveBearProperties",
-      "sourceMethod": "public com.fivebear.common.config.FiveBearProperties.Upload getUpload() "
+      "sourceMethod": "getUpload()"
     }
   ],
   "properties": [
