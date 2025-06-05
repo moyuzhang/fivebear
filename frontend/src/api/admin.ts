@@ -93,17 +93,17 @@ export const adminApi = {
 
 // 获取系统状态
 export const getSystemStatus = () => {
-  return request.get('/api/admin/system-status')
+  return request.get('/api/system/status')
 }
 
 // 获取系统统计信息
 export const getStatistics = () => {
-  return request.get('/api/admin/statistics')
+  return request.get('/api/system/statistics')
 }
 
 // 获取最近活动日志
 export const getRecentActivities = () => {
-  return request.get('/api/admin/recent-activities')
+  return request.get('/api/system/recent-activities')
 }
 
 // 系统状态接口类型定义

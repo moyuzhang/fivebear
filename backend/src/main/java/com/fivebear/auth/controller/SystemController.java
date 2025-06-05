@@ -26,11 +26,11 @@ import org.springframework.web.bind.annotation.RestController;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 
-@Tag(name = "管理员接口", description = "管理员相关API")
+@Tag(name = "系统监控接口", description = "系统状态和监控相关API")
 @RestController
-@RequestMapping("/api/admin")
+@RequestMapping("/api/system")
 @CrossOrigin(origins = "*")
-public class AdminController {
+public class SystemController {
 
     @Autowired(required = false)
     private RedisTemplate<String, Object> redisTemplate;
@@ -39,7 +39,7 @@ public class AdminController {
     private JdbcTemplate jdbcTemplate;
 
     @Operation(summary = "获取系统状态")
-    @GetMapping("/system-status")
+    @GetMapping("/status")
     public ResponseEntity<?> getSystemStatus() {
         Map<String, Object> result = new HashMap<>();
         Map<String, Object> data = new HashMap<>();

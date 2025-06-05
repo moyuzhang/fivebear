@@ -192,7 +192,7 @@ export class LoginNotificationService {
         this.connect(token)
       } else {
         console.log('❌ WebSocket重连失败，已达到最大重试次数')
-        ElMessage.error('网络连接不稳定，实时通知功能暂时不可用')
+        // WebSocket connection unstable
       }
     }, delay)
   }
