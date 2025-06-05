@@ -1,27 +1,49 @@
 import { createApp } from 'vue'
 import { createPinia } from 'pinia'
 import ElementPlus from 'element-plus'
-import * as ElementPlusIconsVue from '@element-plus/icons-vue'
 import 'element-plus/dist/index.css'
+import 'element-plus/theme-chalk/dark/css-vars.css'
+import * as ElementPlusIconsVue from '@element-plus/icons-vue'
+
 import App from './App.vue'
 import router from './router'
-import { useUserStore } from './stores/user'
+import { useUserStore } from '@/stores/user'
 
+// 创建应用实例
 const app = createApp(App)
-const pinia = createPinia()
 
-app.use(pinia)
-
-// 初始化用户状态
-const userStore = useUserStore()
-userStore.initializeFromStorage()
-
-// 注册所有图标
+// 注册Element Plus图标
 for (const [key, component] of Object.entries(ElementPlusIconsVue)) {
   app.component(key, component)
 }
 
-app.use(ElementPlus)
+// 使用插件
+app.use(createPinia())
 app.use(router)
+app.use(ElementPlus)
 
-app.mount('#app') 
+// 应用初始化
+const initApp = async () => {
+  console.log('🚀 FiveBear 系统启动中...')
+  
+  // 初始化用户状态
+  const userStore = useUserStore()
+  
+  try {
+    await userStore.initUser()
+    console.log('✅ 用户状态初始化完成')
+  } catch (error) {
+    console.error('❌ 用户状态初始化失败:', error)
+  }
+
+// 挂载应用
+app.mount('#app')
+  console.log('✅ FiveBear 系统启动完成')
+}
+
+// 启动应用
+initApp().catch(error => {
+  console.error('🚨 应用启动失败:', error)
+  // 即使初始化失败，也要挂载应用
+  app.mount('#app')
+}) 

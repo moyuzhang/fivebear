@@ -1,0 +1,41 @@
+请求头信息:
+URL: https://b1.pt755b62.xyz//(S(a4a2ptcckjedtwgyh4q3guuy))/Member/DoLogin?_=1744469203282
+Method: POST
+Headers:
+Accept: text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8
+Accept: application/json, text/javascript, */*; q=0.01
+Accept-Language: zh-CN,zh;q=0.9,en;q=0.8
+Accept-Language: zh-CN,zh;q=0.8,zh-TW;q=0.7,zh-HK;q=0.5,en-US;q=0.3,en;q=0.2
+Cache-Control: no-cache
+Content-Type: application/json; charset=UTF-8
+Cookie: robot7=ZFut1ug6y3zMyhe5xGGckU7iZNONT7hy9ObY51L7Gu9De82mCeinCx7WjplqEule9fJj45A6eEopjpHHIci4Kw==
+Pragma: no-cache
+Upgrade-Insecure-Requests: 1
+User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36
+X-Requested-With: XMLHttpRequest
+Body: {"Account":"8e1c1b8761de7445bbb0ef17f3345bb7c723199a9a476b27e4cd475d3b7e0610daf3cab2a91ec4b8180bd63580255295da039c411688d350c0b6cd22562a4c727c6c43aaeea08c35383cb04bb842214c04c674e87ecca59d38f40e90b55d19d53f68b496d16af614a79021b3d24d863a07480ee4f3101b12680e4dcfd49dae0a","Password":"16474c92c107d4da3c6c971ceb02713e7234e8868c40854fbeefaef20c4d30d32fd0db4cd9e02aa42b5370589c3652ea21b3222d34e418c15018eda3cd993844ab1729ca9c4466778f7cee8137d002e72a11ac615df866b27498be4ffdca5e77931bcf05fb441ef9985fc721dc1e5ae0365054e89d6ae07d7e846eb5180d3ec3","publickey":"9052A2461968D1B4544C4FF6485774442F51740617A1E2D7957CF6377CD7FC4D03DC823E974330B81E5C2138BE8811481331069D57AF109CCC0CF39A91F476E438AF6EFB7F702EC69050057DA816BE07BF91CE027C4A79FB8C3374A4F91DE72DE01D5F00838E4DACE81A914021DADE9994F62E76CE4622E0D5A26B565564090B","captchacode":""}
+
+
+Sec-Fetch-Dest: empty
+
+
+
+POST https://b1.pt755b62.xyz/(S(cgu51qszlcqnvjckuhufjotu))/Member/DoLogin?_=1744472025125 HTTP/1.1
+Host: b1.pt755b62.xyz
+User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:137.0) Gecko/20100101 Firefox/137.0
+Accept: application/json, text/javascript, */*; q=0.01
+Accept-Language: zh-CN,zh;q=0.8,zh-TW;q=0.7,zh-HK;q=0.5,en-US;q=0.3,en;q=0.2
+Accept-Encoding: gzip, deflate, br, zstd
+Content-Type: application/x-www-form-urlencoded; charset=UTF-8
+X-Requested-With: XMLHttpRequest
+Content-Length: 810
+Origin: https://b1.pt755b62.xyz
+Connection: keep-alive
+Referer: https://b1.pt755b62.xyz/Member/Login?_=1744471993069
+Cookie: first_visit=1; robot7=ZFut1ug6y3zMyhe5xGGckbcsBoJRraP7BwL0/KQlCHtmtkCrLfLa9/LFrZY3rTi7R+eF/UFoTJlKabLKwhJsoQ==; ASP.NET_SessionId=cgu51qszlcqnvjckuhufjotu; Akamai_Cookie=2318928394.32791.0000
+Sec-Fetch-Dest: empty
+Sec-Fetch-Mode: cors
+Sec-Fetch-Site: same-origin
+Priority: u=0
+
+Account=40a80380518e1369f225e85f1af29ee7ff1ad726a5d1529d8db4102206a0da94e5190f2f2d1744d7bf6696644491eb8c9bf3f89e18654c3d1623ec64948f295ca36788256eb79055cd0ae34958f2a3f3661d4e50be448554d7a3a000a1762a79946afcc91089b405626cffdc6696c5281984550afd8038c2551c18af9ecf1950&Password=8fa6a2643ee521cba71c2f0a22c370c3d7b0d2e42e6839a6a9d4e2e3d7a1938e68ec0bde4b8f0a9e284bea1680e71b96d842b5ca38885beeb661d758a6ca3bb7e3e47b649a46c0ae1f67cb27b9ef3a51cad69b5a4d8c4e78b6728c78bce29dad0011e4e767ae6e1c2b1cfa459c869842235c2de9e68a663cf9394579ac2b79cf&publickey=9052A2461968D1B4544C4FF6485774442F51740617A1E2D7957CF6377CD7FC4D03DC823E974330B81E5C2138BE8811481331069D57AF109CCC0CF39A91F476E438AF6EFB7F702EC69050057DA816BE07BF91CE027C4A79FB8C3374A4F91DE72DE01D5F00838E4DACE81A914021DADE9994F62E76CE4622E0D5A26B565564090B&captchacode=

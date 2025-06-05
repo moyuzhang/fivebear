@@ -1,0 +1,226 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>WebSocket 连接测试</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 20px auto;
+            padding: 20px;
+        }
+        .test-section {
+            margin: 20px 0;
+            padding: 15px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+        }
+        button {
+            padding: 8px 16px;
+            margin: 5px;
+            border: none;
+            border-radius: 3px;
+            cursor: pointer;
+        }
+        .connect-btn { background-color: #4CAF50; color: white; }
+        .disconnect-btn { background-color: #f44336; color: white; }
+        .send-btn { background-color: #008CBA; color: white; }
+        .status {
+            padding: 10px;
+            margin: 10px 0;
+            border-radius: 3px;
+        }
+        .connected { background-color: #d4edda; color: #155724; }
+        .disconnected { background-color: #f8d7da; color: #721c24; }
+        .error { background-color: #f8d7da; color: #721c24; }
+        #logs {
+            height: 300px;
+            overflow-y: auto;
+            border: 1px solid #ddd;
+            padding: 10px;
+            background-color: #f9f9f9;
+            font-family: monospace;
+            font-size: 12px;
+        }
+        input[type="text"] {
+            width: 300px;
+            padding: 5px;
+            margin: 5px;
+        }
+    </style>
+</head>
+<body>
+    <h1>WebSocket 连接测试</h1>
+    
+    <div class="test-section">
+        <h3>连接配置</h3>
+        <div>
+            <label>WebSocket URL:</label>
+            <input type="text" id="wsUrl" value="http://localhost:8080/ws" readonly>
+        </div>
+        <div>
+            <label>JWT Token:</label>
+            <input type="text" id="jwtToken" value="eyJhbGciOiJIUzM4NCJ9.eyJ1c2VySWQiOjcyLCJ1c2VybmFtZSI6ImFkbWluIiwic3ViIjoiYWRtaW4iLCJpYXQiOjE3NDkwOTU0MjAsImV4cCI6MTc0OTE4MTgyMH0.or_cgXkzEuOjMOKwBPtvD1ZsseXwuTRWS2zuOQaFz30AmYG83Pfz_2ztEzb2S30J">
+        </div>
+    </div>
+
+    <div class="test-section">
+        <h3>连接控制</h3>
+        <button class="connect-btn" onclick="connect()">连接 WebSocket</button>
+        <button class="disconnect-btn" onclick="disconnect()">断开连接</button>
+        <div id="status" class="status disconnected">状态: 未连接</div>
+    </div>
+
+    <div class="test-section">
+        <h3>消息测试</h3>
+        <div>
+            <input type="text" id="messageInput" placeholder="输入要发送的消息" value='{"type":"LOGIN_NOTIFICATION","action":"test","data":{"message":"Hello WebSocket!"},"userId":"72"}'>
+            <button class="send-btn" onclick="sendMessage()">发送消息</button>
+        </div>
+        <div>
+            <button class="send-btn" onclick="sendPlatformMessage()">发送平台消息</button>
+            <button class="send-btn" onclick="sendLoginMessage()">发送登录消息</button>
+        </div>
+    </div>
+
+    <div class="test-section">
+        <h3>连接日志</h3>
+        <button onclick="clearLogs()">清空日志</button>
+        <div id="logs"></div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/sockjs-client@1.6.1/dist/sockjs.min.js"></script>
+    <script>
+        let socket = null;
+        let connected = false;
+
+        function log(message) {
+            const logs = document.getElementById('logs');
+            const timestamp = new Date().toLocaleTimeString();
+            logs.innerHTML += `[${timestamp}] ${message}\n`;
+            logs.scrollTop = logs.scrollHeight;
+        }
+
+        function updateStatus(status, isConnected) {
+            const statusDiv = document.getElementById('status');
+            statusDiv.textContent = `状态: ${status}`;
+            statusDiv.className = `status ${isConnected ? 'connected' : 'disconnected'}`;
+            connected = isConnected;
+        }
+
+        function connect() {
+            if (connected) {
+                log('已经连接，请先断开');
+                return;
+            }
+
+            const wsUrl = document.getElementById('wsUrl').value;
+            const token = document.getElementById('jwtToken').value;
+            
+            if (!token) {
+                log('ERROR: 请输入JWT Token');
+                return;
+            }
+
+            try {
+                // 构建带token的URL
+                const urlWithToken = `${wsUrl}?token=${encodeURIComponent(token)}`;
+                log(`正在连接到: ${urlWithToken}`);
+                
+                // 使用SockJS连接
+                socket = new SockJS(urlWithToken);
+                
+                socket.onopen = function(event) {
+                    log('✓ WebSocket连接成功');
+                    updateStatus('已连接', true);
+                };
+
+                socket.onmessage = function(event) {
+                    log(`← 收到消息: ${event.data}`);
+                };
+
+                socket.onclose = function(event) {
+                    log(`✗ 连接关闭: code=${event.code}, reason=${event.reason}`);
+                    updateStatus('已断开', false);
+                    socket = null;
+                };
+
+                socket.onerror = function(error) {
+                    log(`✗ 连接错误: ${error}`);
+                    updateStatus('连接错误', false);
+                };
+
+            } catch (error) {
+                log(`✗ 连接失败: ${error.message}`);
+                updateStatus('连接失败', false);
+            }
+        }
+
+        function disconnect() {
+            if (socket && connected) {
+                socket.close();
+                log('主动断开连接');
+            } else {
+                log('当前未连接');
+            }
+        }
+
+        function sendMessage() {
+            if (!connected || !socket) {
+                log('ERROR: 请先连接WebSocket');
+                return;
+            }
+
+            const message = document.getElementById('messageInput').value;
+            if (!message) {
+                log('ERROR: 请输入消息内容');
+                return;
+            }
+
+            try {
+                socket.send(message);
+                log(`→ 发送消息: ${message}`);
+            } catch (error) {
+                log(`✗ 发送失败: ${error.message}`);
+            }
+        }
+
+        function sendPlatformMessage() {
+            const message = JSON.stringify({
+                type: "PLATFORM_MANAGEMENT",
+                action: "GET_SITES",
+                data: {
+                    userId: "72"
+                }
+            });
+            document.getElementById('messageInput').value = message;
+            sendMessage();
+        }
+
+        function sendLoginMessage() {
+            const message = JSON.stringify({
+                type: "LOGIN_NOTIFICATION",
+                action: "HEARTBEAT",
+                data: {
+                    userId: "72",
+                    timestamp: new Date().getTime()
+                }
+            });
+            document.getElementById('messageInput').value = message;
+            sendMessage();
+        }
+
+        function clearLogs() {
+            document.getElementById('logs').innerHTML = '';
+        }
+
+        // 页面加载时记录信息
+        window.onload = function() {
+            log('页面加载完成，准备测试WebSocket连接');
+            log('确保后端服务运行在 http://localhost:8080');
+        };
+    </script>
+</body>
+</html> 

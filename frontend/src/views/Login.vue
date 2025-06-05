@@ -2,179 +2,241 @@
   <div class="login-container">
     <div class="login-box">
       <div class="login-header">
-        <img src="../assets/logo.svg" alt="FiveBear Logo" class="logo">
-        <h2>FiveBear 管理系统</h2>
+        <div class="logo">🐻</div>
+        <h2>FiveBear 系统登录</h2>
       </div>
-      <el-form :model="loginForm" :rules="rules" ref="loginFormRef" class="login-form">
+      
+      <el-form
+        ref="loginFormRef"
+        :model="loginForm"
+        :rules="loginRules"
+        class="login-form"
+        @keyup.enter="handleLogin"
+      >
         <el-form-item prop="username">
           <el-input
             v-model="loginForm.username"
             placeholder="请输入用户名"
-            :prefix-icon="User"
+            prefix-icon="User"
+            size="large"
+            clearable
           />
         </el-form-item>
+        
         <el-form-item prop="password">
           <el-input
             v-model="loginForm.password"
             type="password"
             placeholder="请输入密码"
-            :prefix-icon="Lock"
+            prefix-icon="Lock"
+            size="large"
             show-password
-            @keyup.enter="handleLogin"
+            clearable
           />
         </el-form-item>
+        
         <el-form-item>
-          <el-button 
-            type="primary" 
-            @click="handleLogin" 
-            :loading="loading" 
-            class="login-button"
+          <el-button
+            type="primary"
+            size="large"
+            :loading="loginLoading"
+            class="login-btn"
+            @click="handleLogin"
           >
-            登录
+            {{ loginLoading ? '登录中...' : '登录' }}
           </el-button>
         </el-form-item>
       </el-form>
+      
+      <div class="login-footer">
+        <p>© 2024 FiveBear System. All rights reserved.</p>
+      </div>
     </div>
   </div>
 </template>
 
 <script setup lang="ts">
-import { ref, reactive } from 'vue'
-import { useRouter } from 'vue-router'
-import { ElMessage } from 'element-plus'
-import type { FormInstance } from 'element-plus'
-import { User, Lock } from '@element-plus/icons-vue'
-import request from '@/api/request'
-import md5 from 'crypto-js/md5'
+import { ref, reactive, onMounted } from 'vue'
+import { useRouter, useRoute } from 'vue-router'
+import { ElMessage, ElForm } from 'element-plus'
+import { useUserStore } from '@/stores/user'
+import { authApi } from '@/api/auth'
+import type { LoginParams } from '@/types'
 
 const router = useRouter()
-const loginFormRef = ref<FormInstance>()
-const loading = ref(false)
+const route = useRoute()
+const userStore = useUserStore()
 
-const loginForm = reactive({
+// 表单引用
+const loginFormRef = ref<InstanceType<typeof ElForm>>()
+
+// 登录表单数据
+const loginForm = reactive<LoginParams>({
   username: '',
   password: ''
 })
 
-const rules = {
+// 表单验证规则
+const loginRules = reactive({
   username: [
     { required: true, message: '请输入用户名', trigger: 'blur' },
-    { min: 3, max: 20, message: '用户名长度应在 3 到 20 个字符之间', trigger: 'blur' }
+    { min: 2, max: 20, message: '用户名长度在 2 到 20 个字符', trigger: 'blur' }
   ],
   password: [
     { required: true, message: '请输入密码', trigger: 'blur' },
-    { min: 6, max: 20, message: '密码长度应在 6 到 20 个字符之间', trigger: 'blur' }
+    { min: 6, max: 20, message: '密码长度在 6 到 20 个字符', trigger: 'blur' }
   ]
+})
+
+// 登录状态
+const loginLoading = ref(false)
+
+// 处理登录
+const handleLogin = async () => {
+  // 表单验证
+  if (!loginFormRef.value) {
+    return
+  }
+  
+  const valid = await loginFormRef.value.validate().catch(() => false)
+  if (!valid) {
+    return
+  }
+
+  // 检查锁定状态
+  if (loginForm.username.trim()) {
+    try {
+      const lockStatus = await authApi.checkLockStatus(loginForm.username.trim())
+      if (lockStatus.data?.isLocked) {
+        const remainingMinutes = lockStatus.data.remainingMinutes || 0
+        ElMessage.warning(`账户已被锁定，请${remainingMinutes}分钟后再试`)
+        return
+      }
+    } catch (error) {
+      console.error('检查锁定状态失败:', error)
+    }
+  }
+
+  loginLoading.value = true
+
+  try {
+    console.log('🔐 开始登录...')
+    
+    // 执行登录
+    await userStore.login(loginForm)
+    
+    // 登录成功
+    console.log('✅ 登录成功')
+    ElMessage.success('登录成功')
+    
+    // 获取重定向地址
+    const redirect = (route.query.redirect as string) || '/dashboard'
+    console.log('🔀 跳转到:', redirect)
+    
+    // 跳转到目标页面
+    await router.push(redirect)
+    
+  } catch (error: any) {
+    console.error('❌ 登录失败:', error)
+    // 错误消息已在请求拦截器中处理，这里不再重复显示
+  } finally {
+    loginLoading.value = false
+  }
 }
 
-const handleLogin = async () => {
-  if (!loginFormRef.value) return
+// 组件挂载时检查登录状态
+onMounted(async () => {
+  console.log('📄 登录页面挂载')
   
-  await loginFormRef.value.validate(async (valid) => {
-    if (valid) {
-      try {
-        loading.value = true
-        const loginData = {
-          account: loginForm.username,
-          password: md5(loginForm.password).toString()
-        }
-        
-        console.log('Sending login request with data:', {
-          account: loginData.account,
-          password: '******' // 隐藏密码
-        })
-        
-        const response = await request.post('/api/login', loginData)
-        
-        console.log('Login response:', response)
-        
-        if (response.data && response.data.success) {
-          const { token, userInfo } = response.data.data
-          localStorage.setItem('token', `Bearer ${token}`)
-          localStorage.setItem('userInfo', JSON.stringify(userInfo))
-          ElMessage.success(response.data.message || '登录成功')
-          await router.push('/')
-        } else {
-          ElMessage.error(response.data?.error || '登录失败：无效的响应数据')
-        }
-      } catch (error: any) {
-        console.error('Login error:', error)
-        ElMessage.error(error.response?.data?.error || '登录失败，请检查账号密码')
-      } finally {
-        loading.value = false
-      }
+  // 检查是否是强制登出
+  const message = route.query.message as string
+  if (message === 'forced_logout') {
+    ElMessage.warning('您的账户在其他地方登录，已自动退出')
+  }
+  
+  // 如果已经登录，直接跳转
+  if (userStore.isLoggedIn && userStore.userInfo) {
+    console.log('👤 用户已登录，准备跳转')
+    
+    const redirect = (route.query.redirect as string) || '/dashboard'
+    console.log('🔀 跳转到:', redirect)
+    
+    await router.push(redirect)
+    return
+  }
+  
+  // 如果有token但没有用户信息，尝试初始化
+  if (userStore.token && !userStore.userInfo) {
+    console.log('🔄 检测到token，尝试恢复登录状态...')
+    
+    const initSuccess = await userStore.initUser()
+    if (initSuccess) {
+      const redirect = (route.query.redirect as string) || '/dashboard'
+      console.log('🔀 状态恢复成功，跳转到:', redirect)
+      await router.push(redirect)
     }
-  })
-}
+  }
+})
 </script>
 
 <style scoped>
 .login-container {
-  height: 100vh;
+  min-height: 100vh;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
   display: flex;
-  justify-content: center;
   align-items: center;
-  background: linear-gradient(135deg, #1f4037 0%, #99f2c8 100%);
+  justify-content: center;
+  padding: 20px;
 }
 
 .login-box {
-  width: 400px;
+  background: white;
+  border-radius: 12px;
   padding: 40px;
-  background: rgba(255, 255, 255, 0.9);
-  border-radius: 8px;
-  box-shadow: 0 2px 12px 0 rgba(0, 0, 0, 0.1);
+  width: 100%;
+  max-width: 400px;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.1);
 }
 
 .login-header {
   text-align: center;
-  margin-bottom: 40px;
+  margin-bottom: 30px;
 }
 
 .logo {
-  width: 80px;
-  height: 80px;
-  margin-bottom: 20px;
+  font-size: 48px;
+  margin-bottom: 15px;
+  display: inline-block;
 }
 
-h2 {
+.login-header h2 {
+  color: #333;
   margin: 0;
-  color: #303133;
-  font-size: 24px;
-  font-weight: 500;
+  font-weight: 600;
 }
 
 .login-form {
-  margin-top: 20px;
+  margin-bottom: 20px;
 }
 
-.login-button {
+.login-form .el-form-item {
+  margin-bottom: 20px;
+}
+
+.login-btn {
   width: 100%;
-  height: 40px;
+  height: 45px;
   font-size: 16px;
-  background: #409eff;
-  border: none;
-  transition: all 0.3s;
+  border-radius: 6px;
 }
 
-.login-button:hover {
-  background: #66b1ff;
-  transform: translateY(-1px);
-  box-shadow: 0 2px 8px rgba(64, 158, 255, 0.3);
+.login-footer {
+  text-align: center;
+  color: #888;
+  font-size: 12px;
 }
 
-.login-button:active {
-  transform: translateY(0);
+.login-footer p {
+  margin: 0;
 }
-
-:deep(.el-input__wrapper) {
-  box-shadow: 0 0 0 1px #dcdfe6 inset;
-}
-
-:deep(.el-input__wrapper:hover) {
-  box-shadow: 0 0 0 1px #409eff inset;
-}
-
-:deep(.el-input__wrapper.is-focus) {
-  box-shadow: 0 0 0 1px #409eff inset;
-}
-</style> 
+</style>

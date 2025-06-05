@@ -1,24 +1,59 @@
-import { fileURLToPath, URL } from 'node:url'
 import { defineConfig } from 'vite'
 import vue from '@vitejs/plugin-vue'
+import { resolve } from 'path'
 
-// https://vitejs.dev/config/
 export default defineConfig({
-  plugins: [vue()],
-  resolve: {
-    alias: {
-      '@': fileURLToPath(new URL('./src', import.meta.url))
+    plugins: [vue()],
+    resolve: {
+        alias: {
+            '@': resolve(__dirname, 'src')
+        }
+    },
+    define: {
+        global: 'globalThis',
+    },
+    server: {
+        host: '0.0.0.0',
+        port: 3000,
+        open: true, // 自动打开浏览器
+        cors: true, // 启用CORS
+        // 热重载配置
+        hmr: {
+            overlay: true // 显示错误覆盖层
+        },
+        proxy: {
+            '/api': {
+                target: 'http://localhost:8080',
+                changeOrigin: true,
+                secure: false, // 如果是https接口，需要配置这个参数
+                rewrite: (path) => path.replace(/^\/api/, ''),
+                // 代理超时配置
+                timeout: 30000,
+                // 日志
+                configure: (proxy, _options) => {
+                    proxy.on('error', (err, _req, _res) => {
+                        console.log('proxy error', err);
+                    });
+                    proxy.on('proxyReq', (proxyReq, req, _res) => {
+                        console.log('Sending Request to the Target:', req.method, req.url);
+                    });
+                    proxy.on('proxyRes', (proxyRes, req, _res) => {
+                        console.log('Received Response from the Target:', proxyRes.statusCode, req.url);
+                    });
+                },
+            }
+        }
+    },
+    build: {
+        outDir: 'dist',
+        sourcemap: false,
+        minify: 'terser',
+        rollupOptions: {
+            output: {
+                chunkFileNames: 'js/[name]-[hash].js',
+                entryFileNames: 'js/[name]-[hash].js',
+                assetFileNames: '[ext]/[name]-[hash].[ext]'
+            }
+        }
     }
-  },
-  server: {
-    port: 5173,
-    proxy: {
-      '/api': {
-        target: 'http://localhost:8080',
-        changeOrigin: true,
-        secure: false,
-        ws: true
-      }
-    }
-  }
 }) 

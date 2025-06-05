@@ -1,36 +1,34 @@
 <template>
-  <router-view />
+  <div id="app">
+    <el-config-provider :locale="zhCn">
+      <router-view />
+      <WebSocketStatus />
+    </el-config-provider>
+  </div>
 </template>
 
 <script setup lang="ts">
-// 组件逻辑
+import { ElConfigProvider } from 'element-plus'
+import zhCn from 'element-plus/es/locale/lang/zh-cn'
+import WebSocketStatus from '@/components/WebSocketStatus.vue'
 </script>
 
 <style>
-html, body {
+#app {
+  font-family: Avenir, Helvetica, Arial, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  color: #2c3e50;
+}
+
+html,
+body {
   margin: 0;
   padding: 0;
   height: 100%;
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
 }
 
-#app {
-  height: 100%;
+* {
+  box-sizing: border-box;
 }
-
-/* 路由过渡动画 */
-.fade-transform-enter-active,
-.fade-transform-leave-active {
-  transition: all 0.3s;
-}
-
-.fade-transform-enter-from {
-  opacity: 0;
-  transform: translateX(-30px);
-}
-
-.fade-transform-leave-to {
-  opacity: 0;
-  transform: translateX(30px);
-}
-</style> 
+</style>

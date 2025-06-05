@@ -1,0 +1,73 @@
+{
+  "groups": [
+    {
+      "name": "fivebear",
+      "type": "com.fivebear.common.config.FiveBearProperties",
+      "sourceType": "com.fivebear.common.config.FiveBearProperties"
+    },
+    {
+      "name": "fivebear.jwt",
+      "type": "com.fivebear.common.config.FiveBearProperties$Jwt",
+      "sourceType": "com.fivebear.common.config.FiveBearProperties",
+      "sourceMethod": "public com.fivebear.common.config.FiveBearProperties.Jwt getJwt() "
+    },
+    {
+      "name": "fivebear.system",
+      "type": "com.fivebear.common.config.FiveBearProperties$System",
+      "sourceType": "com.fivebear.common.config.FiveBearProperties",
+      "sourceMethod": "public com.fivebear.common.config.FiveBearProperties.System getSystem() "
+    },
+    {
+      "name": "fivebear.upload",
+      "type": "com.fivebear.common.config.FiveBearProperties$Upload",
+      "sourceType": "com.fivebear.common.config.FiveBearProperties",
+      "sourceMethod": "public com.fivebear.common.config.FiveBearProperties.Upload getUpload() "
+    }
+  ],
+  "properties": [
+    {
+      "name": "fivebear.jwt.expire-time",
+      "type": "java.lang.Long",
+      "sourceType": "com.fivebear.common.config.FiveBearProperties$Jwt"
+    },
+    {
+      "name": "fivebear.jwt.secret",
+      "type": "java.lang.String",
+      "sourceType": "com.fivebear.common.config.FiveBearProperties$Jwt"
+    },
+    {
+      "name": "fivebear.system.author",
+      "type": "java.lang.String",
+      "sourceType": "com.fivebear.common.config.FiveBearProperties$System"
+    },
+    {
+      "name": "fivebear.system.name",
+      "type": "java.lang.String",
+      "sourceType": "com.fivebear.common.config.FiveBearProperties$System"
+    },
+    {
+      "name": "fivebear.system.version",
+      "type": "java.lang.String",
+      "sourceType": "com.fivebear.common.config.FiveBearProperties$System"
+    },
+    {
+      "name": "fivebear.upload.max-file-size",
+      "type": "java.lang.String",
+      "sourceType": "com.fivebear.common.config.FiveBearProperties$Upload"
+    },
+    {
+      "name": "fivebear.upload.max-request-size",
+      "type": "java.lang.String",
+      "sourceType": "com.fivebear.common.config.FiveBearProperties$Upload"
+    },
+    {
+      "name": "fivebear.upload.path",
+      "type": "java.lang.String",
+      "sourceType": "com.fivebear.common.config.FiveBearProperties$Upload"
+    }
+  ],
+  "hints": [],
+  "ignored": {
+    "properties": []
+  }
+}

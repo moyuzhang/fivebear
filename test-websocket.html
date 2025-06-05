@@ -1,0 +1,353 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>WebSocket 多地登录测试</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .container {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            margin-bottom: 20px;
+        }
+        .status {
+            padding: 10px;
+            border-radius: 4px;
+            margin: 10px 0;
+            font-weight: bold;
+        }
+        .status.connected {
+            background-color: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+        .status.disconnected {
+            background-color: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+        .status.warning {
+            background-color: #fff3cd;
+            color: #856404;
+            border: 1px solid #ffeaa7;
+        }
+        button {
+            background-color: #007bff;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 4px;
+            cursor: pointer;
+            margin: 5px;
+        }
+        button:hover {
+            background-color: #0056b3;
+        }
+        button:disabled {
+            background-color: #6c757d;
+            cursor: not-allowed;
+        }
+        .logout-btn {
+            background-color: #dc3545;
+        }
+        .logout-btn:hover {
+            background-color: #c82333;
+        }
+        input {
+            padding: 8px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            margin: 5px;
+            width: 200px;
+        }
+        .log {
+            background-color: #f8f9fa;
+            border: 1px solid #dee2e6;
+            border-radius: 4px;
+            padding: 10px;
+            height: 300px;
+            overflow-y: auto;
+            font-family: monospace;
+            font-size: 12px;
+        }
+        .log-entry {
+            margin: 2px 0;
+            padding: 2px;
+        }
+        .log-info { color: #007bff; }
+        .log-success { color: #28a745; }
+        .log-warning { color: #ffc107; }
+        .log-error { color: #dc3545; }
+    </style>
+</head>
+<body>
+    <h1>🔌 WebSocket 多地登录测试工具</h1>
+    
+    <div class="container">
+        <h2>登录测试</h2>
+        <div>
+            <input type="text" id="username" placeholder="用户名" value="admin">
+            <input type="password" id="password" placeholder="密码" value="Aa147258">
+            <button onclick="login()">登录</button>
+            <button onclick="logout()" class="logout-btn">登出</button>
+        </div>
+        <div id="loginStatus" class="status disconnected">未登录</div>
+    </div>
+
+    <div class="container">
+        <h2>WebSocket 连接状态</h2>
+        <div id="wsStatus" class="status disconnected">WebSocket 未连接</div>
+        <button onclick="connectWebSocket()">连接 WebSocket</button>
+        <button onclick="disconnectWebSocket()">断开 WebSocket</button>
+    </div>
+
+    <div class="container">
+        <h2>测试说明</h2>
+        <ol>
+            <li>在第一个浏览器窗口中登录</li>
+            <li>观察WebSocket连接状态变为"已连接"</li>
+            <li>在第二个浏览器窗口（隐身模式）中用相同账户登录</li>
+            <li>观察第一个窗口是否收到强制下线通知</li>
+        </ol>
+    </div>
+
+    <div class="container">
+        <h2>日志</h2>
+        <button onclick="clearLog()">清空日志</button>
+        <div id="log" class="log"></div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/sockjs-client@1.6.1/dist/sockjs.min.js"></script>
+    <script>
+        let token = null;
+        let socket = null;
+        let isLoggedIn = false;
+
+        const API_BASE = 'http://localhost:8080';
+        const WS_URL = `${API_BASE}/ws/login-notification`;
+
+        function log(message, type = 'info') {
+            const logDiv = document.getElementById('log');
+            const entry = document.createElement('div');
+            entry.className = `log-entry log-${type}`;
+            entry.textContent = `[${new Date().toLocaleTimeString()}] ${message}`;
+            logDiv.appendChild(entry);
+            logDiv.scrollTop = logDiv.scrollHeight;
+        }
+
+        function updateLoginStatus(status, type = 'disconnected') {
+            const statusDiv = document.getElementById('loginStatus');
+            statusDiv.textContent = status;
+            statusDiv.className = `status ${type}`;
+        }
+
+        function updateWSStatus(status, type = 'disconnected') {
+            const statusDiv = document.getElementById('wsStatus');
+            statusDiv.textContent = status;
+            statusDiv.className = `status ${type}`;
+        }
+
+        async function login() {
+            const username = document.getElementById('username').value;
+            const password = document.getElementById('password').value;
+
+            if (!username || !password) {
+                log('请输入用户名和密码', 'error');
+                return;
+            }
+
+            try {
+                log(`尝试登录用户: ${username}`, 'info');
+                
+                const response = await fetch(`${API_BASE}/auth/login`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ username, password })
+                });
+
+                const result = await response.json();
+
+                if (response.ok && result.code === 200) {
+                    token = result.data.token;
+                    isLoggedIn = true;
+                    updateLoginStatus(`登录成功: ${result.data.userInfo.nickname}`, 'connected');
+                    log(`登录成功，Token: ${token.substring(0, 20)}...`, 'success');
+                    
+                    // 自动连接WebSocket
+                    connectWebSocket();
+                } else {
+                    log(`登录失败: ${result.message}`, 'error');
+                    updateLoginStatus(`登录失败: ${result.message}`, 'disconnected');
+                }
+            } catch (error) {
+                log(`登录请求失败: ${error.message}`, 'error');
+                updateLoginStatus('登录请求失败', 'disconnected');
+            }
+        }
+
+        async function logout() {
+            if (!token) {
+                log('未登录，无需登出', 'warning');
+                return;
+            }
+
+            try {
+                log('正在登出...', 'info');
+                
+                const response = await fetch(`${API_BASE}/auth/logout`, {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': `Bearer ${token}`
+                    }
+                });
+
+                if (response.ok) {
+                    log('登出成功', 'success');
+                } else {
+                    log('登出请求失败', 'warning');
+                }
+            } catch (error) {
+                log(`登出请求失败: ${error.message}`, 'error');
+            } finally {
+                token = null;
+                isLoggedIn = false;
+                updateLoginStatus('已登出', 'disconnected');
+                disconnectWebSocket();
+            }
+        }
+
+        function connectWebSocket() {
+            if (!token) {
+                log('请先登录再连接WebSocket', 'error');
+                return;
+            }
+
+            if (socket && socket.readyState === WebSocket.OPEN) {
+                log('WebSocket已连接', 'warning');
+                return;
+            }
+
+            try {
+                log('正在连接WebSocket...', 'info');
+                updateWSStatus('正在连接...', 'warning');
+
+                socket = new SockJS(WS_URL);
+
+                socket.onopen = function() {
+                    log('WebSocket连接已建立', 'success');
+                    updateWSStatus('已连接，等待认证...', 'warning');
+                    
+                    // 发送认证消息
+                    const authMessage = {
+                        type: 'auth',
+                        token: token
+                    };
+                    socket.send(JSON.stringify(authMessage));
+                    log('已发送认证消息', 'info');
+                };
+
+                socket.onmessage = function(event) {
+                    try {
+                        const data = JSON.parse(event.data);
+                        log(`收到消息: ${JSON.stringify(data)}`, 'info');
+                        
+                        switch(data.type) {
+                            case 'success':
+                                log(`认证成功: ${data.message}`, 'success');
+                                updateWSStatus('已连接并认证', 'connected');
+                                break;
+                            case 'error':
+                                log(`WebSocket错误: ${data.message}`, 'error');
+                                updateWSStatus(`错误: ${data.message}`, 'disconnected');
+                                break;
+                            case 'force_logout':
+                                log(`🚨 收到强制下线通知: ${data.message}`, 'error');
+                                updateWSStatus('收到强制下线通知', 'warning');
+                                
+                                // 显示警告对话框
+                                if (confirm('您的账户在其他设备上登录，当前会话将被强制下线。\n\n点击确定继续。')) {
+                                    performForceLogout();
+                                } else {
+                                    performForceLogout(); // 即使用户取消也要执行登出
+                                }
+                                break;
+                            default:
+                                log(`未知消息类型: ${data.type}`, 'warning');
+                        }
+                    } catch (error) {
+                        log(`解析WebSocket消息失败: ${error.message}`, 'error');
+                    }
+                };
+
+                socket.onerror = function(error) {
+                    log(`WebSocket连接错误: ${error}`, 'error');
+                    updateWSStatus('连接错误', 'disconnected');
+                };
+
+                socket.onclose = function(event) {
+                    log(`WebSocket连接已关闭: ${event.code} - ${event.reason}`, 'warning');
+                    updateWSStatus('连接已关闭', 'disconnected');
+                };
+
+            } catch (error) {
+                log(`创建WebSocket连接失败: ${error.message}`, 'error');
+                updateWSStatus('连接失败', 'disconnected');
+            }
+        }
+
+        function disconnectWebSocket() {
+            if (socket) {
+                log('主动断开WebSocket连接', 'info');
+                socket.close(1000, 'User disconnect');
+                socket = null;
+                updateWSStatus('已断开', 'disconnected');
+            }
+        }
+
+        function performForceLogout() {
+            log('执行强制登出...', 'warning');
+            
+            // 断开WebSocket
+            disconnectWebSocket();
+            
+            // 清理登录状态
+            token = null;
+            isLoggedIn = false;
+            updateLoginStatus('已被强制下线', 'disconnected');
+            
+            log('强制登出完成', 'success');
+            
+            // 模拟跳转到登录页
+            alert('您已被强制下线，请重新登录。');
+        }
+
+        function clearLog() {
+            document.getElementById('log').innerHTML = '';
+        }
+
+        // 页面加载完成后的初始化
+        window.onload = function() {
+            log('WebSocket测试工具已加载', 'info');
+            log('请先登录，然后观察WebSocket连接状态', 'info');
+        };
+
+        // 页面关闭时清理WebSocket连接
+        window.onbeforeunload = function() {
+            if (socket) {
+                socket.close();
+            }
+        };
+    </script>
+</body>
+</html> 

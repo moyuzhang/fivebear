@@ -1,185 +1,215 @@
 <template>
-  <div class="dashboard">
-    <el-row :gutter="20">
-      <el-col :span="6">
-        <el-card shadow="hover">
-          <template #header>
-            <div class="card-header">
-              <span>总用户数</span>
-            </div>
-          </template>
-          <div class="card-content">
-            <el-statistic :value="statistics.totalUsers">
-              <template #prefix>
-                <el-icon><User /></el-icon>
-              </template>
-            </el-statistic>
-          </div>
-        </el-card>
-      </el-col>
-      <el-col :span="6">
-        <el-card shadow="hover">
-          <template #header>
-            <div class="card-header">
-              <span>今日访问</span>
-            </div>
-          </template>
-          <div class="card-content">
-            <el-statistic :value="statistics.todayVisits">
-              <template #prefix>
-                <el-icon><View /></el-icon>
-              </template>
-            </el-statistic>
-          </div>
-        </el-card>
-      </el-col>
-      <el-col :span="6">
-        <el-card shadow="hover">
-          <template #header>
-            <div class="card-header">
-              <span>系统消息</span>
-            </div>
-          </template>
-          <div class="card-content">
-            <el-statistic :value="statistics.systemMessages">
-              <template #prefix>
-                <el-icon><Message /></el-icon>
-              </template>
-            </el-statistic>
-          </div>
-        </el-card>
-      </el-col>
-      <el-col :span="6">
-        <el-card shadow="hover">
-          <template #header>
-            <div class="card-header">
-              <span>待处理任务</span>
-            </div>
-          </template>
-          <div class="card-content">
-            <el-statistic :value="statistics.pendingTasks">
-              <template #prefix>
-                <el-icon><List /></el-icon>
-              </template>
-            </el-statistic>
-          </div>
-        </el-card>
-      </el-col>
-    </el-row>
+  <Layout>
+    <div class="dashboard">
+    <el-card>
+      <template #header>
+        <div class="card-header">
+          <span>📊 FiveBear企业管理系统仪表盘</span>
+        </div>
+      </template>
 
-    <el-row :gutter="20" class="mt-20">
-      <el-col :span="16">
-        <el-card shadow="hover">
-          <template #header>
-            <div class="card-header">
-              <span>访问趋势</span>
+      <div class="welcome-section">
+        <h2>🎉 欢迎使用 FiveBear企业管理系统</h2>
+        <p>系统已成功启动，所有功能模块正常运行</p>
+
+        <!-- 用户信息卡片 -->
+        <el-card class="user-info-card" v-if="userStore.userInfo">
+          <div class="user-welcome">
+            <el-avatar :size="60" class="welcome-avatar">
+              {{ userStore.userInfo.nickname?.charAt(0) || 'U' }}
+            </el-avatar>
+            <div class="welcome-text">
+              <h3>您好，{{ userStore.userInfo.nickname }}！</h3>
+              <p>角色：{{ userStore.userInfo.roleName }}</p>
+              <p>账户状态：<el-tag type="success">正常</el-tag></p>
             </div>
-          </template>
-          <div class="chart-container">
-            <!-- 这里可以添加图表组件 -->
-            <div class="placeholder">访问趋势图表</div>
           </div>
         </el-card>
-      </el-col>
-      <el-col :span="8">
-        <el-card shadow="hover">
-          <template #header>
-            <div class="card-header">
-              <span>最近活动</span>
-            </div>
-          </template>
-          <el-timeline>
-            <el-timeline-item
-              v-for="(activity, index) in recentActivities"
-              :key="index"
-              :timestamp="activity.time"
-              :type="activity.type">
-              {{ activity.content }}
-            </el-timeline-item>
-          </el-timeline>
-        </el-card>
-      </el-col>
-    </el-row>
+
+        <el-row :gutter="20" class="stats-row">
+          <el-col :span="6">
+            <el-card class="stat-card">
+              <div class="stat-content">
+                <el-icon class="stat-icon">
+                  <User />
+                </el-icon>
+                <div class="stat-info">
+                  <div class="stat-title">管理员模块</div>
+                  <div class="stat-value">正常运行</div>
+                </div>
+              </div>
+            </el-card>
+          </el-col>
+
+          <el-col :span="6">
+            <el-card class="stat-card">
+              <div class="stat-content">
+                <el-icon class="stat-icon">
+                  <TrendCharts />
+                </el-icon>
+                <div class="stat-info">
+                  <div class="stat-title">报表模块</div>
+                  <div class="stat-value">正常运行</div>
+                </div>
+              </div>
+            </el-card>
+          </el-col>
+
+          <el-col :span="6">
+            <el-card class="stat-card">
+              <div class="stat-content">
+                <el-icon class="stat-icon">
+                  <Box />
+                </el-icon>
+                <div class="stat-info">
+                  <div class="stat-title">出货模块</div>
+                  <div class="stat-value">正常运行</div>
+                </div>
+              </div>
+            </el-card>
+          </el-col>
+
+          <el-col :span="6">
+            <el-card class="stat-card">
+              <div class="stat-content">
+                <el-icon class="stat-icon">
+                  <Setting />
+                </el-icon>
+                <div class="stat-info">
+                  <div class="stat-title">系统状态</div>
+                  <div class="stat-value">正常</div>
+                </div>
+              </div>
+            </el-card>
+          </el-col>
+        </el-row>
+
+        <div class="action-buttons">
+          <el-button type="primary" @click="$router.push('/admin')">
+            <el-icon>
+              <User />
+            </el-icon>
+            管理员管理
+          </el-button>
+          <el-button type="success" @click="$router.push('/report')">
+            <el-icon>
+              <TrendCharts />
+            </el-icon>
+            报表分析
+          </el-button>
+          <el-button type="warning" @click="$router.push('/shipment')">
+            <el-icon>
+              <Box />
+            </el-icon>
+            出货管理
+          </el-button>
+        </div>
+      </div>
+    </el-card>
   </div>
+  </Layout>
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted } from 'vue'
-import { User, View, Message, List } from '@element-plus/icons-vue'
+import { User, TrendCharts, Box, Setting } from '@element-plus/icons-vue'
+import Layout from '@/components/Layout.vue'
+import { useUserStore } from '@/stores/user'
 
-const statistics = ref({
-  totalUsers: 1234,
-  todayVisits: 567,
-  systemMessages: 89,
-  pendingTasks: 12
-})
-
-const recentActivities = ref([
-  {
-    content: '系统更新完成',
-    time: '2024-03-20 10:00:00',
-    type: 'success'
-  },
-  {
-    content: '新用户注册',
-    time: '2024-03-20 09:30:00',
-    type: 'primary'
-  },
-  {
-    content: '系统警告',
-    time: '2024-03-20 09:00:00',
-    type: 'warning'
-  },
-  {
-    content: '数据库备份',
-    time: '2024-03-20 08:30:00',
-    type: 'info'
-  }
-])
-
-onMounted(() => {
-  // 这里可以添加获取实际数据的逻辑
-})
+const userStore = useUserStore()
 </script>
 
 <style scoped>
 .dashboard {
-  padding: 20px;
-}
-
-.mt-20 {
-  margin-top: 20px;
+  padding: 0; /* 移除padding，由Layout组件处理 */
 }
 
 .card-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
+  font-size: 18px;
+  font-weight: bold;
 }
 
-.card-content {
+.welcome-section {
   text-align: center;
-  padding: 20px 0;
+  padding: 20px;
 }
 
-.chart-container {
-  height: 300px;
+.welcome-section h2 {
+  color: #409eff;
+  margin-bottom: 10px;
+}
+
+.user-info-card {
+  margin: 20px auto;
+  max-width: 400px;
+}
+
+.user-welcome {
   display: flex;
   align-items: center;
-  justify-content: center;
+  text-align: left;
+  padding: 20px;
 }
 
-.placeholder {
-  color: #909399;
+.welcome-avatar {
+  background-color: #409eff;
+  color: white;
+  font-weight: bold;
+  margin-right: 20px;
+}
+
+.welcome-text h3 {
+  margin: 0 0 10px 0;
+  color: #409eff;
+}
+
+.welcome-text p {
+  margin: 5px 0;
+  color: #666;
+}
+
+.stats-row {
+  margin: 30px 0;
+}
+
+.stat-card {
+  margin-bottom: 20px;
+}
+
+.stat-content {
+  display: flex;
+  align-items: center;
+  padding: 10px;
+}
+
+.stat-icon {
+  font-size: 30px;
+  color: #409eff;
+  margin-right: 15px;
+}
+
+.stat-info {
+  flex: 1;
+}
+
+.stat-title {
   font-size: 14px;
+  color: #666;
 }
 
-:deep(.el-card__header) {
-  padding: 15px 20px;
-  border-bottom: 1px solid #ebeef5;
+.stat-value {
+  font-size: 18px;
+  font-weight: bold;
+  color: #67c23a;
 }
 
-:deep(.el-card__body) {
-  padding: 15px 20px;
+.action-buttons {
+  margin-top: 30px;
 }
-</style> 
+
+.action-buttons .el-button {
+  margin: 0 10px;
+}
+</style>

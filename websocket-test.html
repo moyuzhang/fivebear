@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>WebSocket Token 验证测试</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; }
+        .container { max-width: 800px; margin: 0 auto; }
+        .section { margin: 20px 0; padding: 20px; border: 1px solid #ddd; border-radius: 5px; }
+        .log { background-color: #f5f5f5; padding: 10px; height: 300px; overflow-y: auto; border: 1px solid #ccc; margin: 10px 0; font-family: monospace; font-size: 12px; }
+        button { padding: 10px 20px; margin: 5px; cursor: pointer; }
+        input[type="text"] { width: 500px; padding: 5px; margin: 5px; }
+        .success { color: green; }
+        .error { color: red; }
+        .info { color: blue; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>WebSocket Token 验证测试</h1>
+        
+        <div class="section">
+            <h3>1. 获取 Token</h3>
+            <button onclick="getToken()">获取有效Token</button>
+            <input type="text" id="tokenInput" placeholder="JWT Token" />
+            <div id="tokenStatus"></div>
+        </div>
+
+        <div class="section">
+            <h3>2. WebSocket 连接测试</h3>
+            <button onclick="connectWithToken()">使用Token连接</button>
+            <button onclick="connectWithoutToken()">无Token连接</button>
+            <button onclick="connectWithBadToken()">无效Token连接</button>
+            <button onclick="disconnect()">断开连接</button>
+            <div id="connectionStatus"></div>
+        </div>
+
+        <div class="section">
+            <h3>3. 消息测试</h3>
+            <button onclick="sendPing()">发送心跳</button>
+            <button onclick="sendStatus()">查询状态</button>
+            <button onclick="sendCustomMessage()">发送自定义消息</button>
+        </div>
+
+        <div class="section">
+            <h3>4. 连接日志</h3>
+            <button onclick="clearLog()">清空日志</button>
+            <div id="log" class="log"></div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/sockjs-client@1.6.1/dist/sockjs.min.js"></script>
+    <script>
+        let socket = null;
+        let currentToken = null;
+
+        function log(message, type = 'info') {
+            const logDiv = document.getElementById('log');
+            const timestamp = new Date().toISOString().substr(11, 12);
+            const className = type === 'error' ? 'error' : type === 'success' ? 'success' : 'info';
+            logDiv.innerHTML += `<div class="${className}">[${timestamp}] ${message}</div>`;
+            logDiv.scrollTop = logDiv.scrollHeight;
+        }
+
+        function clearLog() {
+            document.getElementById('log').innerHTML = '';
+        }
+
+        async function getToken() {
+            try {
+                const response = await fetch('http://localhost:8080/auth/login', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        username: 'admin',
+                        password: 'Aa147258'
+                    })
+                });
+
+                const data = await response.json();
+                if (data.success) {
+                    currentToken = data.data.token;
+                    document.getElementById('tokenInput').value = currentToken;
+                    document.getElementById('tokenStatus').innerHTML = '<span class="success">✅ Token获取成功</span>';
+                    log('Token获取成功', 'success');
+                } else {
+                    document.getElementById('tokenStatus').innerHTML = '<span class="error">❌ Token获取失败</span>';
+                    log('Token获取失败: ' + data.message, 'error');
+                }
+            } catch (error) {
+                document.getElementById('tokenStatus').innerHTML = '<span class="error">❌ 网络错误</span>';
+                log('网络错误: ' + error.message, 'error');
+            }
+        }
+
+        function connectWithToken() {
+            const token = document.getElementById('tokenInput').value || currentToken;
+            if (!token) {
+                log('请先获取Token', 'error');
+                return;
+            }
+            connect(token);
+        }
+
+        function connectWithoutToken() {
+            connect('');
+        }
+
+        function connectWithBadToken() {
+            connect('invalid.jwt.token');
+        }
+
+        function connect(token) {
+            disconnect();
+
+            try {
+                const url = token 
+                    ? `http://localhost:8080/ws/login-notification?token=${encodeURIComponent(token)}`
+                    : 'http://localhost:8080/ws/login-notification';
+                
+                log(`尝试连接WebSocket: ${url.replace(token, '[TOKEN]')}`, 'info');
+                
+                socket = new SockJS(url);
+
+                socket.onopen = function() {
+                    log('✅ WebSocket连接已建立', 'success');
+                    document.getElementById('connectionStatus').innerHTML = '<span class="success">已连接</span>';
+                };
+
+                socket.onmessage = function(event) {
+                    try {
+                        const data = JSON.parse(event.data);
+                        log(`📨 收到消息: ${JSON.stringify(data)}`, 'success');
+                    } catch (e) {
+                        log(`📨 收到原始消息: ${event.data}`, 'info');
+                    }
+                };
+
+                socket.onerror = function(error) {
+                    log(`❌ WebSocket错误: ${error}`, 'error');
+                    document.getElementById('connectionStatus').innerHTML = '<span class="error">连接错误</span>';
+                };
+
+                socket.onclose = function(event) {
+                    log(`🔌 连接已关闭: Code=${event.code}, Reason=${event.reason}`, 'info');
+                    document.getElementById('connectionStatus').innerHTML = '<span class="error">已断开</span>';
+                    socket = null;
+                };
+
+            } catch (error) {
+                log(`❌ 连接失败: ${error.message}`, 'error');
+            }
+        }
+
+        function disconnect() {
+            if (socket) {
+                socket.close();
+                log('🔌 主动断开连接', 'info');
+            }
+        }
+
+        function sendPing() {
+            if (!socket || socket.readyState !== SockJS.OPEN) {
+                log('❌ 连接未建立', 'error');
+                return;
+            }
+            const message = JSON.stringify({ type: 'ping' });
+            socket.send(message);
+            log(`📤 发送消息: ${message}`, 'info');
+        }
+
+        function sendStatus() {
+            if (!socket || socket.readyState !== SockJS.OPEN) {
+                log('❌ 连接未建立', 'error');
+                return;
+            }
+            const message = JSON.stringify({ type: 'status' });
+            socket.send(message);
+            log(`📤 发送消息: ${message}`, 'info');
+        }
+
+        function sendCustomMessage() {
+            if (!socket || socket.readyState !== SockJS.OPEN) {
+                log('❌ 连接未建立', 'error');
+                return;
+            }
+            const message = JSON.stringify({ type: 'custom', data: 'Hello WebSocket!' });
+            socket.send(message);
+            log(`📤 发送消息: ${message}`, 'info');
+        }
+
+        // 页面加载时初始化
+        window.onload = function() {
+            log('🚀 WebSocket测试页面已加载', 'info');
+            document.getElementById('connectionStatus').innerHTML = '<span class="error">未连接</span>';
+        };
+    </script>
+</body>
+</html> 
