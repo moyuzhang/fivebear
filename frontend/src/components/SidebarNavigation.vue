@@ -207,7 +207,7 @@ defineExpose({ isCollapsed })
 .sidebar-navigation {
   width: 250px;
   height: 100vh;
-  background: #001529;
+  background: linear-gradient(180deg, #2c3e50 0%, #34495e 100%);
   position: fixed;
   left: 0;
   top: 0;
@@ -215,6 +215,7 @@ defineExpose({ isCollapsed })
   transition: all 0.3s ease;
   display: flex;
   flex-direction: column;
+  box-shadow: 2px 0 8px rgba(0, 0, 0, 0.15);
 }
 
 .sidebar-navigation.collapsed {
@@ -227,7 +228,8 @@ defineExpose({ isCollapsed })
   align-items: center;
   justify-content: space-between;
   padding: 0 16px;
-  border-bottom: 1px solid #1890ff;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  background: rgba(255, 255, 255, 0.05);
 }
 
 .logo {
@@ -241,96 +243,167 @@ defineExpose({ isCollapsed })
 .logo .el-icon {
   font-size: 24px;
   margin-right: 8px;
-  color: #1890ff;
+  color: #3498db;
 }
 
 .logo-text {
-  color: #fff;
+  color: #ffffff;
+  font-size: 18px;
+  font-weight: 600;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
 }
 
 .collapse-btn {
-  color: #fff;
+  color: #ffffff;
   border: none;
+  border-radius: 6px;
+  transition: all 0.3s ease;
 }
 
 .collapse-btn:hover {
-  background-color: #1890ff;
+  background-color: #3498db;
+  transform: scale(1.05);
 }
 
 .sidebar-menu {
   flex: 1;
   border: none;
-  background: #001529;
+  background: transparent;
   overflow-y: auto;
+  padding: 8px 0;
 }
 
 .sidebar-menu .el-menu-item {
   color: #ffffff !important;
   height: 48px;
   line-height: 48px;
-  font-size: 14px !important;
+  font-size: 15px !important;
   font-weight: 500 !important;
+  margin: 4px 12px;
+  border-radius: 8px;
+  transition: all 0.3s ease;
+  background: transparent;
 }
 
 .sidebar-menu .el-menu-item span {
   color: #ffffff !important;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
+}
+
+.sidebar-menu .el-menu-item .el-icon {
+  color: #3498db !important;
+  font-size: 18px !important;
 }
 
 .sidebar-menu .el-menu-item:hover {
-  background-color: #1890ff !important;
-  color: #fff !important;
+  background: linear-gradient(135deg, #3498db 0%, #2980b9 100%) !important;
+  color: #ffffff !important;
+  transform: translateX(4px);
+  box-shadow: 0 4px 12px rgba(52, 152, 219, 0.3);
 }
 
 .sidebar-menu .el-menu-item:hover span {
-  color: #fff !important;
+  color: #ffffff !important;
+}
+
+.sidebar-menu .el-menu-item:hover .el-icon {
+  color: #ffffff !important;
 }
 
 .sidebar-menu .el-menu-item.is-active {
-  background-color: #1890ff !important;
-  color: #fff !important;
+  background: linear-gradient(135deg, #e74c3c 0%, #c0392b 100%) !important;
+  color: #ffffff !important;
+  box-shadow: 0 4px 12px rgba(231, 76, 60, 0.3);
 }
 
 .sidebar-menu .el-menu-item.is-active span {
-  color: #fff !important;
+  color: #ffffff !important;
+}
+
+.sidebar-menu .el-menu-item.is-active .el-icon {
+  color: #ffffff !important;
 }
 
 .sidebar-menu .el-sub-menu .el-sub-menu__title {
   color: #ffffff !important;
   height: 48px;
   line-height: 48px;
-  font-size: 14px !important;
+  font-size: 15px !important;
   font-weight: 500 !important;
+  margin: 4px 12px;
+  border-radius: 8px;
+  transition: all 0.3s ease;
+  background: transparent;
 }
 
 .sidebar-menu .el-sub-menu .el-sub-menu__title span {
   color: #ffffff !important;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
+}
+
+.sidebar-menu .el-sub-menu .el-sub-menu__title .el-icon {
+  color: #3498db !important;
+  font-size: 18px !important;
 }
 
 .sidebar-menu .el-sub-menu .el-sub-menu__title:hover {
-  background-color: #1890ff !important;
-  color: #fff !important;
+  background: linear-gradient(135deg, #3498db 0%, #2980b9 100%) !important;
+  color: #ffffff !important;
+  transform: translateX(4px);
+  box-shadow: 0 4px 12px rgba(52, 152, 219, 0.3);
 }
 
 .sidebar-menu .el-sub-menu .el-sub-menu__title:hover span {
-  color: #fff !important;
+  color: #ffffff !important;
+}
+
+.sidebar-menu .el-sub-menu .el-sub-menu__title:hover .el-icon {
+  color: #ffffff !important;
 }
 
 .sidebar-menu .el-sub-menu.is-active .el-sub-menu__title {
-  color: #fff !important;
+  color: #ffffff !important;
+  background: linear-gradient(135deg, #9b59b6 0%, #8e44ad 100%) !important;
+  box-shadow: 0 4px 12px rgba(155, 89, 182, 0.3);
 }
 
 .sidebar-menu .el-sub-menu.is-active .el-sub-menu__title span {
-  color: #fff !important;
+  color: #ffffff !important;
+}
+
+.sidebar-menu .el-sub-menu.is-active .el-sub-menu__title .el-icon {
+  color: #ffffff !important;
 }
 
 .sidebar-menu .el-sub-menu .el-menu {
-  background-color: #000c17;
+  background: rgba(0, 0, 0, 0.2);
+  margin: 0 8px;
+  border-radius: 8px;
+}
+
+.sidebar-menu .el-sub-menu .el-menu .el-menu-item {
+  background: transparent;
+  margin: 2px 8px;
+  border-radius: 6px;
+  color: rgba(255, 255, 255, 0.9) !important;
+}
+
+.sidebar-menu .el-sub-menu .el-menu .el-menu-item:hover {
+  background: rgba(52, 152, 219, 0.8) !important;
+  color: #ffffff !important;
+  transform: translateX(2px);
+}
+
+.sidebar-menu .el-sub-menu .el-menu .el-menu-item.is-active {
+  background: linear-gradient(135deg, #f39c12 0%, #e67e22 100%) !important;
+  color: #ffffff !important;
 }
 
 .sidebar-footer {
   padding: 16px;
-  border-top: 1px solid #1890ff;
-  background: #000c17;
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+  background: rgba(0, 0, 0, 0.2);
+  backdrop-filter: blur(10px);
 }
 
 .user-info {
@@ -339,26 +412,30 @@ defineExpose({ isCollapsed })
 }
 
 .user-avatar {
-  background-color: #1890ff;
-  color: white;
+  background: linear-gradient(135deg, #3498db 0%, #2980b9 100%);
+  color: #ffffff;
   font-weight: bold;
   margin-right: 12px;
+  box-shadow: 0 2px 8px rgba(52, 152, 219, 0.3);
 }
 
 .user-details {
   flex: 1;
-  color: #fff;
+  color: #ffffff;
 }
 
 .username {
   font-size: 14px;
-  font-weight: 500;
+  font-weight: 600;
   margin-bottom: 2px;
+  color: #ffffff;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
 }
 
 .role {
   font-size: 12px;
-  color: rgba(255, 255, 255, 0.8);
+  color: #bdc3c7;
+  font-weight: 500;
 }
 
 /* 调整主内容区域的左边距 */
