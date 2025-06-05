@@ -137,6 +137,15 @@ const routes: Array<RouteRecordRaw> = [
     }
   },
   {
+    path: '/init-admin',
+    name: 'InitAdmin',
+    component: () => import('@/views/InitAdmin.vue'),
+    meta: {
+      title: '初始化管理员',
+      hideInMenu: true
+    }
+  },
+  {
     path: '/:pathMatch(.*)*',
     name: 'NotFound',
     component: () => import('@/views/404.vue'),
@@ -154,7 +163,7 @@ const router = createRouter({
 })
 
 // 白名单路由 - 不需要认证的页面
-const whiteList = ['/login', '/404']
+const whiteList = ['/login', '/404', '/init-admin']
 
 // 路由守卫
 router.beforeEach(async (to, from, next) => {
