@@ -1,27 +1,28 @@
 <template>
   <Layout>
     <div class="security-center">
-    <el-card>
-      <template #header>
-        <div class="page-header">
-          <div class="header-title">
-            <el-icon><Lock /></el-icon>
-            <span>安全中心</span>
+      <el-card>
+        <template #header>
+          <div class="page-header">
+            <div class="header-title">
+              <el-icon><Lock /></el-icon>
+              <span>安全中心</span>
+            </div>
           </div>
-        </div>
-      </template>
+        </template>
 
-      <div class="content">
-        <h3>🚧 安全中心模块开发中...</h3>
-        <p>该模块功能正在开发中，敬请期待</p>
-        <el-button @click="$router.push('/admin')">返回管理首页</el-button>
-      </div>
-    </el-card>
-  </div>
+        <div class="content">
+          <h3>🚧 安全中心模块开发中...</h3>
+          <p>该模块功能正在开发中，敬请期待</p>
+          <el-button @click="$router.push('/admin')">返回管理首页</el-button>
+        </div>
+      </el-card>
+    </div>
+  </Layout>
 </template>
 
 <script setup lang="ts">
-import Navigation from '@/components/Navigation.vue'
+import Layout from '@/components/Layout.vue'
 import { Lock } from '@element-plus/icons-vue'
 </script>
 
