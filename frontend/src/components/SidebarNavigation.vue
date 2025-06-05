@@ -464,4 +464,64 @@ defineExpose({ isCollapsed })
 .sidebar-navigation.collapsed + * {
   margin-left: 64px;
 }
+
+.nav-menu-item {
+  padding: var(--space-3) var(--space-4);
+  margin: var(--space-2) var(--space-3);
+  border-radius: var(--radius-lg);
+  color: var(--gray-700);
+  text-decoration: none;
+  transition: all var(--transition-base);
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  background: white;
+  border: 1px solid var(--gray-200);
+  box-shadow: var(--shadow-xs);
+  min-height: 48px;
+}
+
+.logo-area {
+  padding: var(--space-6) var(--space-4);
+  text-align: center;
+  border-bottom: 1px solid var(--gray-200);
+  margin-bottom: var(--space-6);
+  background: var(--primary-50);
+}
+
+.sidebar {
+  width: 250px;
+  background: var(--gray-50);
+  border-right: 1px solid var(--gray-200);
+  position: fixed;
+  left: 0;
+  top: 0;
+  height: 100vh;
+  overflow-y: auto;
+  transition: all var(--transition-base);
+  display: flex;
+  flex-direction: column;
+  z-index: 200;
+  box-shadow: var(--shadow-md);
+}
+
+.nav-menu {
+  flex: 1;
+  padding: 0 0 var(--space-6) 0;
+}
+
+.submenu-item {
+  padding: var(--space-2) var(--space-4) var(--space-2) var(--space-12);
+  margin: var(--space-1) var(--space-3);
+  border-radius: var(--radius-md);
+  color: var(--gray-600);
+  background: var(--gray-50);
+  border: 1px solid var(--gray-200);
+  transition: all var(--transition-base);
+  display: flex;
+  align-items: center;
+  text-decoration: none;
+  font-size: var(--text-sm);
+  min-height: 36px;
+}
 </style> 
