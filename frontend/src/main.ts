@@ -5,6 +5,9 @@ import 'element-plus/dist/index.css'
 import 'element-plus/theme-chalk/dark/css-vars.css'
 import * as ElementPlusIconsVue from '@element-plus/icons-vue'
 
+// 导入设计系统
+import '@/styles/design-system.css'
+
 import App from './App.vue'
 import router from './router'
 import { useUserStore } from '@/stores/user'
