@@ -19,12 +19,15 @@
         </div>
         
         <div class="header-right">
+          <!-- 时间显示 -->
+          <div class="time-display">
+            <div class="current-time">{{ currentTime }}</div>
+            <div class="current-date">{{ currentDate }}</div>
+          </div>
+          
           <!-- 用户信息展示 -->
           <div class="user-display">
-            <div class="user-welcome">
-              <span class="welcome-text">欢迎回来</span>
-              <span class="user-name">{{ userStore.userInfo?.username || '用户' }}</span>
-            </div>
+            <span class="user-name">{{ userStore.userInfo?.username || '用户' }}</span>
           </div>
           
           <!-- 用户下拉菜单 -->
@@ -90,6 +93,49 @@ const userStore = useUserStore()
 // 侧边栏折叠状态
 const sidebarCollapsed = ref(localStorage.getItem('sidebar-collapsed') === 'true')
 
+// 时间显示
+const currentTime = ref('')
+const currentDate = ref('')
+let timeInterval: NodeJS.Timeout | null = null
+
+// 格式化时间
+const formatTime = () => {
+  const now = new Date()
+  
+  // 格式化时间 HH:MM:SS
+  const timeString = now.toLocaleTimeString('zh-CN', {
+    hour12: false,
+    hour: '2-digit',
+    minute: '2-digit',
+    second: '2-digit'
+  })
+  
+  // 格式化日期 YYYY年MM月DD日 星期X
+  const dateString = now.toLocaleDateString('zh-CN', {
+    year: 'numeric',
+    month: 'long',
+    day: 'numeric',
+    weekday: 'long'
+  })
+  
+  currentTime.value = timeString
+  currentDate.value = dateString
+}
+
+// 启动时间更新
+const startTimeUpdate = () => {
+  formatTime() // 立即更新一次
+  timeInterval = setInterval(formatTime, 1000) // 每秒更新
+}
+
+// 停止时间更新
+const stopTimeUpdate = () => {
+  if (timeInterval) {
+    clearInterval(timeInterval)
+    timeInterval = null
+  }
+}
+
 // 当前路由信息
 const currentRouteName = computed(() => route.name)
 const currentRouteTitle = computed(() => route.meta?.title || '')
@@ -101,10 +147,12 @@ const handleSidebarToggle = (event: CustomEvent) => {
 
 onMounted(() => {
   window.addEventListener('sidebar-toggle', handleSidebarToggle as EventListener)
+  startTimeUpdate() // 启动时间更新
 })
 
 onUnmounted(() => {
   window.removeEventListener('sidebar-toggle', handleSidebarToggle as EventListener)
+  stopTimeUpdate() // 停止时间更新
 })
 
 // 切换侧边栏
@@ -234,33 +282,45 @@ const handleLogout = async () => {
 .header-right {
   display: flex;
   align-items: center;
-  gap: var(--space-4);
+  gap: var(--space-6);
+}
+
+/* 时间显示区域 */
+.time-display {
+  text-align: center;
+  padding: var(--space-2) var(--space-4);
+  background: var(--gray-50);
+  border-radius: var(--radius-lg);
+  border: 1px solid var(--gray-200);
+}
+
+.current-time {
+  font-size: var(--text-lg);
+  font-weight: var(--font-weight-bold);
+  color: var(--primary-600);
+  font-family: 'Courier New', monospace;
+}
+
+.current-date {
+  font-size: var(--text-xs);
+  color: var(--gray-500);
+  margin-top: var(--space-1);
 }
 
 /* 用户信息展示区域 */
 .user-display {
-  text-align: right;
-  padding-right: var(--space-3);
-  border-right: 1px solid var(--gray-200);
-}
-
-.user-welcome {
   display: flex;
-  flex-direction: column;
-  align-items: flex-end;
-  gap: var(--space-1);
-}
-
-.welcome-text {
-  font-size: var(--text-xs);
-  color: var(--gray-500);
-  font-weight: var(--font-weight-medium);
+  align-items: center;
+  padding: var(--space-2) var(--space-4);
+  background: var(--primary-50);
+  border-radius: var(--radius-lg);
+  border: 1px solid var(--primary-200);
 }
 
 .user-name {
-  font-size: var(--text-lg);
-  color: var(--gray-900);
-  font-weight: var(--font-weight-bold);
+  font-size: var(--text-base);
+  color: var(--primary-700);
+  font-weight: var(--font-weight-semibold);
 }
 
 
