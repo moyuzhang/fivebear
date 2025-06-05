@@ -234,6 +234,7 @@
 import { ref, onMounted, onUnmounted, nextTick } from 'vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import { Plus, Refresh } from '@element-plus/icons-vue'
+import { useLoading, useDebounce } from '@/composables'
 import { 
   getUserSites, 
   addSite as addSiteApi, 
@@ -249,8 +250,14 @@ import {
   type SiteCreateRequest
 } from '@/api/platform'
 
+// 使用加载状态管理
+const { loading, withLoading } = useLoading()
+const { loading: addSiteLoading, withLoading: withAddSiteLoading } = useLoading()
+const { loading: batchLoginLoading, withLoading: withBatchLoginLoading } = useLoading()
+const { loading: batchLogoutLoading, withLoading: withBatchLogoutLoading } = useLoading()
+const { loading: batchDeleteLoading, withLoading: withBatchDeleteLoading } = useLoading()
+
 // 响应式数据
-const loading = ref(false)
 const sitesData = ref<SitesSummary>({
   totalCount: 0,
   statusCounts: {},
@@ -268,14 +275,8 @@ const messages = ref<Array<{type: string, message: string, timestamp: string}>>(
 // 选择的站点
 const selectedSites = ref<SiteDetail[]>([])
 
-// 批量操作加载状态
-const batchLoginLoading = ref(false)
-const batchLogoutLoading = ref(false)
-const batchDeleteLoading = ref(false)
-
 // 添加站点表单
 const showAddSiteDialog = ref(false)
-const addSiteLoading = ref(false)
 const newSiteForm = ref<SiteCreateRequest>({
   url: '',
   username: '',
@@ -313,20 +314,19 @@ onUnmounted(() => {
 
 // 加载站点数据
 const loadSites = async () => {
-  loading.value = true
-  try {
-    const response = await getUserSites()
-    if (response.success) {
-      sitesData.value = response.data
-    } else {
-      ElMessage.error(response.message)
+  await withLoading(async () => {
+    try {
+      const response = await getUserSites()
+      if (response.success) {
+        sitesData.value = response.data
+      } else {
+        ElMessage.error(response.message)
+      }
+    } catch (error) {
+      console.error('Failed to load sites:', error)
+      ElMessage.error('加载站点数据失败')
     }
-  } catch (error) {
-    console.error('Failed to load sites:', error)
-    ElMessage.error('加载站点数据失败')
-  } finally {
-    loading.value = false
-  }
+  })
 }
 
 // 初始化WebSocket
@@ -411,23 +411,22 @@ const addSite = async () => {
   await siteFormRef.value.validate(async (valid: boolean) => {
     if (!valid) return
     
-    addSiteLoading.value = true
-    try {
-      const response = await addSiteApi(newSiteForm.value)
-      if (response.success) {
-        ElMessage.success('站点添加成功')
-        showAddSiteDialog.value = false
-        resetSiteForm()
-        loadSites()
-      } else {
-        ElMessage.error(response.message)
+    await withAddSiteLoading(async () => {
+      try {
+        const response = await addSiteApi(newSiteForm.value)
+        if (response.success) {
+          ElMessage.success('站点添加成功')
+          showAddSiteDialog.value = false
+          resetSiteForm()
+          loadSites()
+        } else {
+          ElMessage.error(response.message)
+        }
+      } catch (error) {
+        console.error('Failed to add site:', error)
+        ElMessage.error('添加站点失败')
       }
-    } catch (error) {
-      console.error('Failed to add site:', error)
-      ElMessage.error('添加站点失败')
-    } finally {
-      addSiteLoading.value = false
-    }
+    })
   })
 }
 

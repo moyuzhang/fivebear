@@ -4,6 +4,53 @@ import Cookies from 'js-cookie'
 import { useUserStore } from '@/stores/user'
 import type { Result } from '@/types'
 
+// 请求重试配置
+const RETRY_CONFIG = {
+    retries: 3,
+    retryDelay: 1000,
+    retryCondition: (error: AxiosError) => {
+        // 网络错误或 5xx 错误时重试
+        return !error.response || (error.response.status >= 500 && error.response.status < 600)
+    }
+}
+
+// 请求取消令牌管理
+const pendingRequests = new Map<string, AbortController>()
+
+// 生成请求的唯一标识
+const generateRequestKey = (config: AxiosRequestConfig): string => {
+    const { method, url, params, data } = config
+    return [method, url, JSON.stringify(params), JSON.stringify(data)].join('&')
+}
+
+// 添加请求到待处理列表
+const addPendingRequest = (config: AxiosRequestConfig): void => {
+    const requestKey = generateRequestKey(config)
+    
+    // 如果存在相同的请求，先取消之前的
+    if (pendingRequests.has(requestKey)) {
+        const controller = pendingRequests.get(requestKey)
+        controller?.abort()
+    }
+    
+    // 创建新的取消控制器
+    const controller = new AbortController()
+    config.signal = controller.signal
+    pendingRequests.set(requestKey, controller)
+}
+
+// 移除已完成的请求
+const removePendingRequest = (config: AxiosRequestConfig): void => {
+    const requestKey = generateRequestKey(config)
+    pendingRequests.delete(requestKey)
+}
+
+// 清除所有待处理请求
+export const cancelAllPendingRequests = (): void => {
+    pendingRequests.forEach(controller => controller.abort())
+    pendingRequests.clear()
+}
+
 // 创建axios实例
 const service: AxiosInstance = axios.create({
     baseURL: import.meta.env.VITE_API_BASE_URL || '/api',
@@ -17,6 +64,9 @@ const service: AxiosInstance = axios.create({
 service.interceptors.request.use(
     (config: InternalAxiosRequestConfig) => {
         console.log('🚀 Request:', config.method?.toUpperCase(), config.url)
+
+        // 添加到待处理请求列表
+        addPendingRequest(config)
 
         // 添加token
         const token = Cookies.get('token')
@@ -51,6 +101,9 @@ service.interceptors.request.use(
 service.interceptors.response.use(
     (response: AxiosResponse<Result>) => {
         console.log('✅ Response:', response.status, response.config.url)
+        
+        // 移除已完成的请求
+        removePendingRequest(response.config)
 
         const { data } = response
         const { code, message } = data
@@ -137,8 +190,37 @@ service.interceptors.response.use(
             }
         }
     },
-    (error: AxiosError) => {
+    async (error: AxiosError<Result>) => {
+        // 移除已完成的请求
+        if (error.config) {
+            removePendingRequest(error.config)
+        }
+        
+        // 处理取消的请求
+        if (axios.isCancel(error)) {
+            console.log('🚫 Request cancelled:', error.message)
+            return Promise.reject(error)
+        }
+
         console.error('❌ Response Error:', error)
+
+        // 实现重试逻辑
+        const config = error.config as InternalAxiosRequestConfig & { _retryCount?: number }
+        
+        if (config && RETRY_CONFIG.retryCondition(error)) {
+            config._retryCount = config._retryCount ?? 0
+            
+            if (config._retryCount < RETRY_CONFIG.retries) {
+                config._retryCount++
+                console.log(`🔄 Retrying request (${config._retryCount}/${RETRY_CONFIG.retries})...`)
+                
+                // 延迟重试
+                await new Promise(resolve => setTimeout(resolve, RETRY_CONFIG.retryDelay * config._retryCount!))
+                
+                // 重新发送请求
+                return service(config)
+            }
+        }
 
         // 网络错误处理
         if (!error.response) {

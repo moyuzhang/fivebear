@@ -22,9 +22,9 @@ public class WebSocketConfig implements WebSocketConfigurer {
     private final TokenHandshakeInterceptor tokenHandshakeInterceptor;
     private final UnifiedWebSocketHandler unifiedWebSocketHandler;
 
-    public WebSocketConfig(LoginNotificationHandler loginNotificationHandler, 
-                          TokenHandshakeInterceptor tokenHandshakeInterceptor,
-                          @Lazy UnifiedWebSocketHandler unifiedWebSocketHandler) {
+    public WebSocketConfig(LoginNotificationHandler loginNotificationHandler,
+            TokenHandshakeInterceptor tokenHandshakeInterceptor,
+            @Lazy UnifiedWebSocketHandler unifiedWebSocketHandler) {
         this.loginNotificationHandler = loginNotificationHandler;
         this.tokenHandshakeInterceptor = tokenHandshakeInterceptor;
         this.unifiedWebSocketHandler = unifiedWebSocketHandler;
@@ -37,11 +37,11 @@ public class WebSocketConfig implements WebSocketConfigurer {
                 .setAllowedOriginPatterns("http://localhost:3000", "http://127.0.0.1:3000")
                 .addInterceptors(tokenHandshakeInterceptor)
                 .withSockJS();
-        
+
         // 登录通知WebSocket端点（向后兼容）
         registry.addHandler(loginNotificationHandler, "/ws/login-notification")
                 .setAllowedOriginPatterns("http://localhost:3000", "http://127.0.0.1:3000")
                 .addInterceptors(tokenHandshakeInterceptor)
                 .withSockJS();
     }
-} 
+}

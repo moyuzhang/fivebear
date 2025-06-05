@@ -3,6 +3,27 @@ import type { RouteRecordRaw } from 'vue-router'
 import { useUserStore } from '@/stores/user'
 import { ElMessage } from 'element-plus'
 
+// 路由懒加载配置，带有预加载和错误处理
+const lazyLoad = (componentPath: string) => {
+  return () => import(`../views/${componentPath}.vue`).catch(err => {
+    console.error(`Failed to load component: ${componentPath}`, err)
+    ElMessage.error('页面加载失败，请刷新重试')
+    // 返回一个默认的错误组件
+    return import('../views/404.vue')
+  })
+}
+
+// 预加载重要页面
+const preloadImportantViews = () => {
+  // 使用 requestIdleCallback 在空闲时预加载
+  if ('requestIdleCallback' in window) {
+    requestIdleCallback(() => {
+      import('../views/Dashboard.vue')
+      import('../views/admin/Sites.vue')
+    })
+  }
+}
+
 // 路由配置
 const routes: Array<RouteRecordRaw> = [
   {
@@ -12,7 +33,7 @@ const routes: Array<RouteRecordRaw> = [
   {
     path: '/dashboard',
     name: 'Dashboard',
-    component: () => import('@/views/Dashboard.vue'),
+    component: lazyLoad('Dashboard'),
     meta: {
       title: '仪表盘',
       icon: 'dashboard',
@@ -22,7 +43,7 @@ const routes: Array<RouteRecordRaw> = [
   {
     path: '/admin',
     name: 'Admin',
-    component: () => import('@/views/admin/AdminList.vue'),
+    component: lazyLoad('admin/AdminList'),
     meta: {
       title: '管理员管理',
       icon: 'user',
@@ -33,7 +54,7 @@ const routes: Array<RouteRecordRaw> = [
   {
     path: '/admin/users',
     name: 'UserManagement',
-    component: () => import('@/views/admin/UserManagement.vue'),
+    component: lazyLoad('admin/UserManagement'),
     meta: {
       title: '用户管理',
       icon: 'user',
@@ -44,7 +65,7 @@ const routes: Array<RouteRecordRaw> = [
   {
     path: '/admin/roles',
     name: 'RoleManagement',
-    component: () => import('@/views/admin/RoleManagement.vue'),
+    component: lazyLoad('admin/RoleManagement'),
     meta: {
       title: '角色管理',
       icon: 'key',
@@ -55,7 +76,7 @@ const routes: Array<RouteRecordRaw> = [
   {
     path: '/admin/settings',
     name: 'SystemSettings',
-    component: () => import('@/views/admin/SystemSettings.vue'),
+    component: lazyLoad('admin/SystemSettings'),
     meta: {
       title: '系统设置',
       icon: 'setting',
@@ -66,7 +87,7 @@ const routes: Array<RouteRecordRaw> = [
   {
     path: '/admin/monitoring',
     name: 'SystemMonitoring',
-    component: () => import('@/views/admin/SystemMonitoring.vue'),
+    component: lazyLoad('admin/SystemMonitoring'),
     meta: {
       title: '系统监控',
       icon: 'monitor',
@@ -77,7 +98,7 @@ const routes: Array<RouteRecordRaw> = [
   {
     path: '/admin/logs',
     name: 'LogManagement',
-    component: () => import('@/views/admin/LogManagement.vue'),
+    component: lazyLoad('admin/LogManagement'),
     meta: {
       title: '日志管理',
       icon: 'files',
@@ -88,7 +109,7 @@ const routes: Array<RouteRecordRaw> = [
   {
     path: '/admin/security',
     name: 'SecurityCenter',
-    component: () => import('@/views/admin/SecurityCenter.vue'),
+    component: lazyLoad('admin/SecurityCenter'),
     meta: {
       title: '安全中心',
       icon: 'lock',
@@ -99,7 +120,7 @@ const routes: Array<RouteRecordRaw> = [
   {
     path: '/report',
     name: 'Report',
-    component: () => import('@/views/report/ReportDashboard.vue'),
+    component: lazyLoad('report/ReportDashboard'),
     meta: {
       title: '报表管理',
       icon: 'chart',
@@ -109,7 +130,7 @@ const routes: Array<RouteRecordRaw> = [
   {
     path: '/shipment',
     name: 'Shipment',
-    component: () => import('@/views/shipment/ShipmentList.vue'),
+    component: lazyLoad('shipment/ShipmentList'),
     meta: {
       title: '出货管理',
       icon: 'box',
@@ -119,7 +140,7 @@ const routes: Array<RouteRecordRaw> = [
   {
     path: '/sites',
     name: 'Sites',
-    component: () => import('@/views/admin/Sites.vue'),
+    component: lazyLoad('admin/Sites'),
     meta: {
       title: '站点管理',
       icon: 'monitor',
@@ -129,7 +150,7 @@ const routes: Array<RouteRecordRaw> = [
   {
     path: '/login',
     name: 'Login',
-    component: () => import('@/views/Login.vue'),
+    component: lazyLoad('Login'),
     meta: {
       title: '登录',
       hideInMenu: true,
@@ -139,7 +160,7 @@ const routes: Array<RouteRecordRaw> = [
   {
     path: '/:pathMatch(.*)*',
     name: 'NotFound',
-    component: () => import('@/views/404.vue'),
+    component: lazyLoad('404'),
     meta: {
       title: '页面不存在',
       hideInMenu: true
@@ -150,8 +171,27 @@ const routes: Array<RouteRecordRaw> = [
 // 创建路由实例
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
-  routes
+  routes,
+  // 滚动行为优化
+  scrollBehavior(to, from, savedPosition) {
+    if (savedPosition) {
+      // 如果有保存的位置，恢复到该位置
+      return savedPosition
+    } else if (to.hash) {
+      // 如果有锚点，滚动到锚点
+      return {
+        el: to.hash,
+        behavior: 'smooth'
+      }
+    } else {
+      // 否则滚动到顶部
+      return { top: 0 }
+    }
+  }
 })
+
+// 启动预加载
+preloadImportantViews()
 
 // 白名单路由 - 不需要认证的页面
 const whiteList = ['/login', '/404']

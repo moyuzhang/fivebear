@@ -36,14 +36,13 @@ const initApp = async () => {
     console.error('❌ 用户状态初始化失败:', error)
   }
 
-// 挂载应用
-app.mount('#app')
   console.log('✅ FiveBear 系统启动完成')
 }
 
 // 启动应用
 initApp().catch(error => {
   console.error('🚨 应用启动失败:', error)
-  // 即使初始化失败，也要挂载应用
+}).finally(() => {
+  // 无论初始化是否成功，都要挂载应用
   app.mount('#app')
 }) 

@@ -1,0 +1,151 @@
+[
+    {
+        "label": "json",
+        "kind": 6,
+        "isExtraImport": true,
+        "importPath": "json",
+        "description": "json",
+        "detail": "json",
+        "documentation": {}
+    },
+    {
+        "label": "combinations",
+        "importPath": "itertools",
+        "description": "itertools",
+        "isExtraImport": true,
+        "detail": "itertools",
+        "documentation": {}
+    },
+    {
+        "label": "product",
+        "importPath": "itertools",
+        "description": "itertools",
+        "isExtraImport": true,
+        "detail": "itertools",
+        "documentation": {}
+    },
+    {
+        "label": "combinations",
+        "importPath": "itertools",
+        "description": "itertools",
+        "isExtraImport": true,
+        "detail": "itertools",
+        "documentation": {}
+    },
+    {
+        "label": "product",
+        "importPath": "itertools",
+        "description": "itertools",
+        "isExtraImport": true,
+        "detail": "itertools",
+        "documentation": {}
+    },
+    {
+        "label": "Code",
+        "kind": 6,
+        "importPath": "backend.src.main.java.com.fivebear.platform.FourDing",
+        "description": "backend.src.main.java.com.fivebear.platform.FourDing",
+        "peekOfCode": "class Code:\n    def __init__(self, number, amount):\n        self.number = number\n        self.total_amount = amount\n        self.locked_amount = 0\n    @property\n    def remain_amount(self):\n        return round(self.total_amount - self.locked_amount, 8)\n    def lock(self, amount):\n        if self.remain_amount >= amount:",
+        "detail": "backend.src.main.java.com.fivebear.platform.FourDing",
+        "documentation": {}
+    },
+    {
+        "label": "CodeManager",
+        "kind": 6,
+        "importPath": "backend.src.main.java.com.fivebear.platform.FourDing",
+        "description": "backend.src.main.java.com.fivebear.platform.FourDing",
+        "peekOfCode": "class CodeManager:\n    def __init__(self, code_list):\n        self.codes = {c.number: c for c in code_list}\n        self.group2dict = self.build_real_2ding_groups()\n        self.group3dict = self.build_real_3ding_groups()\n    def get_codes_by_key(self, key):\n        \"\"\"\n        根据2定/3定分组key（如'12XX'、'1X34'等）返回所有匹配该key的4定号码对象列表。\n        \"\"\"\n        positions = [i for i, ch in enumerate(key) if ch != 'X']",
+        "detail": "backend.src.main.java.com.fivebear.platform.FourDing",
+        "documentation": {}
+    },
+    {
+        "label": "read_json_file",
+        "kind": 2,
+        "importPath": "backend.src.main.java.com.fivebear.platform.FourDing",
+        "description": "backend.src.main.java.com.fivebear.platform.FourDing",
+        "peekOfCode": "def read_json_file(file_path):\n    with open(file_path, 'r') as file:\n        data = json.load(file)\n    return data\ndef group_key(number, positions):\n    # 生成分组key，positions为定的位置\n    return ''.join([number[i] if i in positions else 'X' for i in range(len(number))])\nclass Code:\n    def __init__(self, number, amount):\n        self.number = number",
+        "detail": "backend.src.main.java.com.fivebear.platform.FourDing",
+        "documentation": {}
+    },
+    {
+        "label": "group_key",
+        "kind": 2,
+        "importPath": "backend.src.main.java.com.fivebear.platform.FourDing",
+        "description": "backend.src.main.java.com.fivebear.platform.FourDing",
+        "peekOfCode": "def group_key(number, positions):\n    # 生成分组key，positions为定的位置\n    return ''.join([number[i] if i in positions else 'X' for i in range(len(number))])\nclass Code:\n    def __init__(self, number, amount):\n        self.number = number\n        self.total_amount = amount\n        self.locked_amount = 0\n    @property\n    def remain_amount(self):",
+        "detail": "backend.src.main.java.com.fivebear.platform.FourDing",
+        "documentation": {}
+    },
+    {
+        "label": "Code",
+        "kind": 6,
+        "importPath": "backend.target.classes.com.fivebear.platform.FourDing",
+        "description": "backend.target.classes.com.fivebear.platform.FourDing",
+        "peekOfCode": "class Code:\n    def __init__(self, number, amount):\n        self.number = number\n        self.total_amount = amount\n        self.locked_amount = 0\n    @property\n    def remain_amount(self):\n        return round(self.total_amount - self.locked_amount, 8)\n    def lock(self, amount):\n        if self.remain_amount >= amount:",
+        "detail": "backend.target.classes.com.fivebear.platform.FourDing",
+        "documentation": {}
+    },
+    {
+        "label": "CodeManager",
+        "kind": 6,
+        "importPath": "backend.target.classes.com.fivebear.platform.FourDing",
+        "description": "backend.target.classes.com.fivebear.platform.FourDing",
+        "peekOfCode": "class CodeManager:\n    def __init__(self, code_list):\n        self.codes = {c.number: c for c in code_list}\n        self.group2dict = self.build_real_2ding_groups()\n        self.group3dict = self.build_real_3ding_groups()\n    def get_codes_by_key(self, key):\n        \"\"\"\n        根据2定/3定分组key（如'12XX'、'1X34'等）返回所有匹配该key的4定号码对象列表。\n        \"\"\"\n        positions = [i for i, ch in enumerate(key) if ch != 'X']",
+        "detail": "backend.target.classes.com.fivebear.platform.FourDing",
+        "documentation": {}
+    },
+    {
+        "label": "read_json_file",
+        "kind": 2,
+        "importPath": "backend.target.classes.com.fivebear.platform.FourDing",
+        "description": "backend.target.classes.com.fivebear.platform.FourDing",
+        "peekOfCode": "def read_json_file(file_path):\n    with open(file_path, 'r') as file:\n        data = json.load(file)\n    return data\ndef group_key(number, positions):\n    # 生成分组key，positions为定的位置\n    return ''.join([number[i] if i in positions else 'X' for i in range(len(number))])\nclass Code:\n    def __init__(self, number, amount):\n        self.number = number",
+        "detail": "backend.target.classes.com.fivebear.platform.FourDing",
+        "documentation": {}
+    },
+    {
+        "label": "group_key",
+        "kind": 2,
+        "importPath": "backend.target.classes.com.fivebear.platform.FourDing",
+        "description": "backend.target.classes.com.fivebear.platform.FourDing",
+        "peekOfCode": "def group_key(number, positions):\n    # 生成分组key，positions为定的位置\n    return ''.join([number[i] if i in positions else 'X' for i in range(len(number))])\nclass Code:\n    def __init__(self, number, amount):\n        self.number = number\n        self.total_amount = amount\n        self.locked_amount = 0\n    @property\n    def remain_amount(self):",
+        "detail": "backend.target.classes.com.fivebear.platform.FourDing",
+        "documentation": {}
+    },
+    {
+        "label": "_Known",
+        "kind": 6,
+        "importPath": "frontend.node_modules.flatted.python.flatted",
+        "description": "frontend.node_modules.flatted.python.flatted",
+        "peekOfCode": "class _Known:\n    def __init__(self):\n        self.key = []\n        self.value = []\nclass _String:\n    def __init__(self, value):\n        self.value = value\ndef _array_keys(value):\n    keys = []\n    i = 0",
+        "detail": "frontend.node_modules.flatted.python.flatted",
+        "documentation": {}
+    },
+    {
+        "label": "_String",
+        "kind": 6,
+        "importPath": "frontend.node_modules.flatted.python.flatted",
+        "description": "frontend.node_modules.flatted.python.flatted",
+        "peekOfCode": "class _String:\n    def __init__(self, value):\n        self.value = value\ndef _array_keys(value):\n    keys = []\n    i = 0\n    for _ in value:\n        keys.append(i)\n        i += 1\n    return keys",
+        "detail": "frontend.node_modules.flatted.python.flatted",
+        "documentation": {}
+    },
+    {
+        "label": "parse",
+        "kind": 2,
+        "importPath": "frontend.node_modules.flatted.python.flatted",
+        "description": "frontend.node_modules.flatted.python.flatted",
+        "peekOfCode": "def parse(value, *args, **kwargs):\n    json = _json.loads(value, *args, **kwargs)\n    wrapped = []\n    for value in json:\n        wrapped.append(_wrap(value))\n    input = []\n    for value in wrapped:\n        if isinstance(value, _String):\n            input.append(value.value)\n        else:",
+        "detail": "frontend.node_modules.flatted.python.flatted",
+        "documentation": {}
+    },
+    {
+        "label": "stringify",
+        "kind": 2,
+        "importPath": "frontend.node_modules.flatted.python.flatted",
+        "description": "frontend.node_modules.flatted.python.flatted",
+        "peekOfCode": "def stringify(value, *args, **kwargs):\n    known = _Known()\n    input = []\n    output = []\n    i = int(_index(known, input, value))\n    while i < len(input):\n        output.append(_transform(known, input, input[i]))\n        i += 1\n    return _json.dumps(output, *args, **kwargs)",
+        "detail": "frontend.node_modules.flatted.python.flatted",
+        "documentation": {}
+    }
+]

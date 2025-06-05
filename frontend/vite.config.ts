@@ -1,12 +1,15 @@
+import { fileURLToPath, URL } from 'node:url'
 import { defineConfig } from 'vite'
 import vue from '@vitejs/plugin-vue'
 import { resolve } from 'path'
 
 export default defineConfig({
-    plugins: [vue()],
+    plugins: [
+        vue()
+    ],
     resolve: {
         alias: {
-            '@': resolve(__dirname, 'src')
+            '@': fileURLToPath(new URL('./src', import.meta.url))
         }
     },
     define: {
@@ -41,6 +44,8 @@ export default defineConfig({
                         console.log('Received Response from the Target:', proxyRes.statusCode, req.url);
                     });
                 },
+                // WebSocket 代理
+                ws: true
             }
         }
     },
@@ -50,10 +55,44 @@ export default defineConfig({
         minify: 'terser',
         rollupOptions: {
             output: {
-                chunkFileNames: 'js/[name]-[hash].js',
-                entryFileNames: 'js/[name]-[hash].js',
-                assetFileNames: '[ext]/[name]-[hash].[ext]'
+                manualChunks: {
+                    'vue-vendor': ['vue', 'vue-router', 'pinia'],
+                    'element-plus': ['element-plus', '@element-plus/icons-vue'],
+                    'utils': ['axios', 'js-cookie', 'crypto-js', 'sockjs-client']
+                },
+                entryFileNames: 'js/[name].[hash].js',
+                chunkFileNames: 'js/[name].[hash].js',
+                assetFileNames: (assetInfo) => {
+                    if (!assetInfo.name) {
+                        return 'assets/[name].[hash].[ext]'
+                    }
+                    const info = assetInfo.name.split('.')
+                    let extType = info[info.length - 1]
+                    if (/\.(mp4|webm|ogg|mp3|wav|flac|aac)(\?.*)?$/i.test(assetInfo.name)) {
+                        extType = 'media'
+                    } else if (/\.(png|jpe?g|gif|svg|webp|ico)(\?.*)?$/i.test(assetInfo.name)) {
+                        extType = 'img'
+                    } else if (/\.(woff2?|eot|ttf|otf)(\?.*)?$/i.test(assetInfo.name)) {
+                        extType = 'fonts'
+                    }
+                    return `${extType}/[name].[hash].[ext]`
+                }
             }
-        }
+        },
+        reportCompressedSize: false,
+        chunkSizeWarningLimit: 2000
+    },
+    optimizeDeps: {
+        include: [
+            'vue',
+            'vue-router',
+            'pinia',
+            'axios',
+            'element-plus',
+            '@element-plus/icons-vue',
+            'js-cookie',
+            'crypto-js',
+            'sockjs-client'
+        ]
     }
 }) 
