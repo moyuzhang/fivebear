@@ -97,6 +97,17 @@ const routes: Array<RouteRecordRaw> = [
     }
   },
   {
+    path: '/test/messages',
+    name: 'TestMessages',
+    component: () => import('@/views/TestMessages.vue'),
+    meta: {
+      title: '消息通知测试',
+      icon: 'bell',
+      requiresAuth: true,
+      hideInMenu: false  // 开发测试时显示在菜单中
+    }
+  },
+  {
     path: '/report',
     name: 'Report',
     component: () => import('@/views/report/ReportDashboard.vue'),

@@ -106,6 +106,11 @@ export const getRecentActivities = () => {
   return request.get('/api/system/recent-activities')
 }
 
+// 获取在线用户信息
+export const getOnlineUsers = () => {
+  return request.get('/api/system/online-users')
+}
+
 // 系统状态接口类型定义
 export interface SystemStatus {
   systemInfo: {

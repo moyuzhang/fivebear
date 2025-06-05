@@ -69,6 +69,11 @@
           <el-icon><Lock /></el-icon>
           <template #title>安全中心</template>
         </el-menu-item>
+        
+        <el-menu-item index="/test/messages">
+          <el-icon><Bell /></el-icon>
+          <template #title>消息测试</template>
+        </el-menu-item>
       </el-sub-menu>
 
       <!-- 报表分析 -->
@@ -157,7 +162,7 @@ import { useRoute } from 'vue-router'
 import { 
   Expand, Fold, Odometer, UserFilled, Grid, User, Key, Setting, 
   Monitor, Files, Lock, TrendCharts, DataAnalysis, Money, Box, List, 
-  Plus, Position, Avatar, Tools
+  Plus, Position, Avatar, Tools, Bell
 } from '@element-plus/icons-vue'
 import { useUserStore } from '@/stores/user'
 

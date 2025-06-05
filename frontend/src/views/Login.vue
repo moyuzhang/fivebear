@@ -148,10 +148,12 @@ const handleLogin = async () => {
 onMounted(async () => {
   console.log('📄 登录页面挂载')
   
-  // 检查是否是强制登出
+  // 检查是否是强制登出（保留此功能以防万一有其他地方跳转过来）
   const message = route.query.message as string
   if (message === 'forced_logout') {
-    ElMessage.warning('您的账户在其他地方登录，已自动退出')
+    // 如果是强制登出，显示一个简洁的提示，但不与用户store重复
+    console.log('🔀 检测到强制登出跳转')
+    // 不再显示额外的提示消息，用户store已经处理过了
   }
   
   // 如果已经登录，直接跳转

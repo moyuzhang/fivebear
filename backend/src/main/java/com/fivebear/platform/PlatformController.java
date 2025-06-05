@@ -5,7 +5,6 @@ import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -15,6 +14,8 @@ import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+
+import com.fivebear.common.result.Result;
 
 /**
  * 站点管理REST API控制器
@@ -30,14 +31,13 @@ public class PlatformController {
      * 获取用户的所有站点
      */
     @GetMapping("/sites")
-    public ResponseEntity<ApiResponse<Map<String, Object>>> getUserSites(
+    public Result<Map<String, Object>> getUserSites(
             @RequestHeader("User-ID") String userId) {
         try {
             Map<String, Object> summary = platformManager.getUserSitesSummary(userId);
-            return ResponseEntity.ok(ApiResponse.success(summary));
+            return Result.ok(summary);
         } catch (Exception e) {
-            return ResponseEntity.badRequest()
-                .body(ApiResponse.error("获取站点列表失败: " + e.getMessage()));
+            return Result.fail("获取站点列表失败: " + e.getMessage());
         }
     }
     
@@ -45,15 +45,14 @@ public class PlatformController {
      * 添加新站点
      */
     @PostMapping("/sites")
-    public ResponseEntity<ApiResponse<Object>> addSite(
+    public Result<Object> addSite(
             @RequestBody SiteCreateRequest request,
             @RequestHeader("User-ID") String userId) {
         try {
             // 验证请求参数
             if (request.getUrl() == null || request.getUsername() == null || 
                 request.getPassword() == null) {
-                return ResponseEntity.badRequest()
-                    .body(ApiResponse.error("站点信息不完整"));
+                return Result.fail("站点信息不完整");
             }
             
             // 创建站点配置
@@ -74,22 +73,20 @@ public class PlatformController {
             
             // 检查业务唯一性
             if (!platformManager.canAddSite(userId, config.getDomainAccount())) {
-                return ResponseEntity.badRequest()
-                    .body(ApiResponse.error("您已经添加过此站点账户"));
+                return Result.fail("您已经添加过此站点账户");
             }
             
             // 异步添加站点
             CompletableFuture<Site> future = platformManager.addSiteAsync(config, userId);
             Site site = future.get(); // 这里可以考虑改为异步响应
             
-            return ResponseEntity.ok(ApiResponse.success(Map.of(
+            return Result.ok(Map.of(
                 "uniqueKey", site.getUniqueKey(),
                 "message", "站点添加成功"
-            )));
+            ));
             
         } catch (Exception e) {
-            return ResponseEntity.badRequest()
-                .body(ApiResponse.error("添加站点失败: " + e.getMessage()));
+            return Result.fail("添加站点失败: " + e.getMessage());
         }
     }
     
@@ -97,14 +94,13 @@ public class PlatformController {
      * 登录站点
      */
     @PostMapping("/sites/{uniqueKey}/login")
-    public ResponseEntity<ApiResponse<Object>> loginSite(
+    public Result<Object> loginSite(
             @PathVariable String uniqueKey,
             @RequestHeader("User-ID") String userId) {
         try {
             // 检查站点所有权
             if (!platformManager.checkSiteOwnership(userId, uniqueKey)) {
-                return ResponseEntity.badRequest()
-                    .body(ApiResponse.error("无权限操作此站点"));
+                return Result.fail("无权限操作此站点");
             }
             
             // 异步登录
@@ -112,18 +108,16 @@ public class PlatformController {
             Boolean result = future.get();
             
             if (result) {
-                return ResponseEntity.ok(ApiResponse.success(Map.of(
+                return Result.ok(Map.of(
                     "uniqueKey", uniqueKey,
                     "message", "登录成功"
-                )));
+                ));
             } else {
-                return ResponseEntity.badRequest()
-                    .body(ApiResponse.error("登录失败"));
+                return Result.fail("登录失败");
             }
             
         } catch (Exception e) {
-            return ResponseEntity.badRequest()
-                .body(ApiResponse.error("登录操作失败: " + e.getMessage()));
+            return Result.fail("登录操作失败: " + e.getMessage());
         }
     }
     
@@ -131,14 +125,13 @@ public class PlatformController {
      * 登出站点
      */
     @PostMapping("/sites/{uniqueKey}/logout")
-    public ResponseEntity<ApiResponse<Object>> logoutSite(
+    public Result<Object> logoutSite(
             @PathVariable String uniqueKey,
             @RequestHeader("User-ID") String userId) {
         try {
             // 检查站点所有权
             if (!platformManager.checkSiteOwnership(userId, uniqueKey)) {
-                return ResponseEntity.badRequest()
-                    .body(ApiResponse.error("无权限操作此站点"));
+                return Result.fail("无权限操作此站点");
             }
             
             // 异步登出
@@ -146,18 +139,16 @@ public class PlatformController {
             Boolean result = future.get();
             
             if (result) {
-                return ResponseEntity.ok(ApiResponse.success(Map.of(
+                return Result.ok(Map.of(
                     "uniqueKey", uniqueKey,
                     "message", "登出成功"
-                )));
+                ));
             } else {
-                return ResponseEntity.badRequest()
-                    .body(ApiResponse.error("登出失败"));
+                return Result.fail("登出失败");
             }
             
         } catch (Exception e) {
-            return ResponseEntity.badRequest()
-                .body(ApiResponse.error("登出操作失败: " + e.getMessage()));
+            return Result.fail("登出操作失败: " + e.getMessage());
         }
     }
     
@@ -165,32 +156,29 @@ public class PlatformController {
      * 删除站点
      */
     @DeleteMapping("/sites/{uniqueKey}")
-    public ResponseEntity<ApiResponse<Object>> deleteSite(
+    public Result<Object> deleteSite(
             @PathVariable String uniqueKey,
             @RequestHeader("User-ID") String userId) {
         try {
             // 检查站点所有权
             if (!platformManager.checkSiteOwnership(userId, uniqueKey)) {
-                return ResponseEntity.badRequest()
-                    .body(ApiResponse.error("无权限操作此站点"));
+                return Result.fail("无权限操作此站点");
             }
             
             // 删除站点
             boolean result = platformManager.removeSite(userId, uniqueKey);
             
             if (result) {
-                return ResponseEntity.ok(ApiResponse.success(Map.of(
+                return Result.ok(Map.of(
                     "uniqueKey", uniqueKey,
                     "message", "站点删除成功"
-                )));
+                ));
             } else {
-                return ResponseEntity.badRequest()
-                    .body(ApiResponse.error("站点删除失败"));
+                return Result.fail("站点删除失败");
             }
             
         } catch (Exception e) {
-            return ResponseEntity.badRequest()
-                .body(ApiResponse.error("删除操作失败: " + e.getMessage()));
+            return Result.fail("删除操作失败: " + e.getMessage());
         }
     }
     
@@ -198,15 +186,14 @@ public class PlatformController {
      * 批量登录站点
      */
     @PostMapping("/sites/batch/login")
-    public ResponseEntity<ApiResponse<Object>> batchLogin(
+    public Result<Object> batchLogin(
             @RequestBody BatchOperationRequest request,
             @RequestHeader("User-ID") String userId) {
         try {
             // 验证所有站点的所有权
             for (String uniqueKey : request.getUniqueKeys()) {
                 if (!platformManager.checkSiteOwnership(userId, uniqueKey)) {
-                    return ResponseEntity.badRequest()
-                        .body(ApiResponse.error("无权限操作站点: " + uniqueKey));
+                    return Result.fail("无权限操作站点: " + uniqueKey);
                 }
             }
             
@@ -215,14 +202,13 @@ public class PlatformController {
                 platformManager.batchLoginAsync(userId, request.getUniqueKeys());
             Map<String, Boolean> results = future.get();
             
-            return ResponseEntity.ok(ApiResponse.success(Map.of(
+            return Result.ok(Map.of(
                 "results", results,
                 "message", "批量登录操作完成"
-            )));
+            ));
             
         } catch (Exception e) {
-            return ResponseEntity.badRequest()
-                .body(ApiResponse.error("批量登录失败: " + e.getMessage()));
+            return Result.fail("批量登录失败: " + e.getMessage());
         }
     }
     
@@ -230,20 +216,18 @@ public class PlatformController {
      * 获取单个站点详情
      */
     @GetMapping("/sites/{uniqueKey}")
-    public ResponseEntity<ApiResponse<Object>> getSiteDetail(
+    public Result<Object> getSiteDetail(
             @PathVariable String uniqueKey,
             @RequestHeader("User-ID") String userId) {
         try {
             // 检查站点所有权
             if (!platformManager.checkSiteOwnership(userId, uniqueKey)) {
-                return ResponseEntity.badRequest()
-                    .body(ApiResponse.error("无权限访问此站点"));
+                return Result.fail("无权限访问此站点");
             }
             
             Site site = platformManager.getUserSite(userId, uniqueKey);
             if (site == null) {
-                return ResponseEntity.badRequest()
-                    .body(ApiResponse.error("站点不存在"));
+                return Result.fail("站点不存在");
             }
             
             Map<String, Object> siteDetail = Map.of(
@@ -259,11 +243,10 @@ public class PlatformController {
                 "databaseId", site.getDatabaseId()
             );
             
-            return ResponseEntity.ok(ApiResponse.success(siteDetail));
+            return Result.ok(siteDetail);
             
         } catch (Exception e) {
-            return ResponseEntity.badRequest()
-                .body(ApiResponse.error("获取站点详情失败: " + e.getMessage()));
+            return Result.fail("获取站点详情失败: " + e.getMessage());
         }
     }
     
@@ -271,7 +254,7 @@ public class PlatformController {
      * 检查站点业务唯一性
      */
     @GetMapping("/sites/check")
-    public ResponseEntity<ApiResponse<Object>> checkSiteUniqueness(
+    public Result<Object> checkSiteUniqueness(
             @RequestParam String url,
             @RequestParam String username,
             @RequestHeader("User-ID") String userId) {
@@ -281,15 +264,14 @@ public class PlatformController {
             
             boolean canAdd = platformManager.canAddSite(userId, domainAccount);
             
-            return ResponseEntity.ok(ApiResponse.success(Map.of(
+            return Result.ok(Map.of(
                 "canAdd", canAdd,
                 "domainAccount", domainAccount,
                 "message", canAdd ? "可以添加此站点" : "您已经添加过此站点账户"
-            )));
+            ));
             
         } catch (Exception e) {
-            return ResponseEntity.badRequest()
-                .body(ApiResponse.error("检查站点失败: " + e.getMessage()));
+            return Result.fail("检查站点失败: " + e.getMessage());
         }
     }
     
@@ -307,37 +289,6 @@ public class PlatformController {
             // 简单处理：直接返回URL
             return url.replaceAll("https?://", "").split("/")[0];
         }
-    }
-    
-    /**
-     * 通用API响应包装类
-     */
-    public static class ApiResponse<T> {
-        private boolean success;
-        private String message;
-        private T data;
-        private long timestamp;
-        
-        public ApiResponse(boolean success, String message, T data) {
-            this.success = success;
-            this.message = message;
-            this.data = data;
-            this.timestamp = System.currentTimeMillis();
-        }
-        
-        public static <T> ApiResponse<T> success(T data) {
-            return new ApiResponse<>(true, "操作成功", data);
-        }
-        
-        public static <T> ApiResponse<T> error(String message) {
-            return new ApiResponse<>(false, message, null);
-        }
-        
-        // Getters and Setters
-        public boolean isSuccess() { return success; }
-        public String getMessage() { return message; }
-        public T getData() { return data; }
-        public long getTimestamp() { return timestamp; }
     }
     
     /**

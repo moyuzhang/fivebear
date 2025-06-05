@@ -1,5 +1,4 @@
 import SockJS from 'sockjs-client'
-import Cookies from 'js-cookie'
 
 export interface WebSocketMessage {
   type: string
@@ -24,6 +23,7 @@ export class UnifiedWebSocket {
   private maxReconnectAttempts = 5
   private reconnectInterval = 3000
   private heartbeatInterval: NodeJS.Timeout | null = null
+  private shouldReconnect = true // 添加重连控制标志
   
   // 回调函数
   private onConnectedCallback?: () => void
@@ -71,7 +71,11 @@ export class UnifiedWebSocket {
         console.log('🔌 统一WebSocket连接已关闭')
         this.stopHeartbeat()
         this.onDisconnectedCallback?.()
-        this.handleReconnect()
+        
+        // 只有在允许重连的情况下才尝试重连
+        if (this.shouldReconnect) {
+          this.handleReconnect()
+        }
       }
 
       // 连接错误
@@ -90,6 +94,7 @@ export class UnifiedWebSocket {
    * 断开连接
    */
   disconnect() {
+    this.shouldReconnect = false // 主动断开时，停止重连
     if (this.socket) {
       this.socket.close()
       this.socket = null
@@ -145,16 +150,27 @@ export class UnifiedWebSocket {
    * 处理强制登出
    */
   private handleForceLogout(message: WebSocketMessage) {
-    console.warn('🚫 收到强制登出通知:', message.message)
+    console.warn('🚫 UnifiedWebSocket: 收到强制登出通知:', message.message)
     
-    // 触发强制登出事件
+    // 停止重连机制
+    this.shouldReconnect = false
+    
+    // 触发注册的强制登出处理器
     const logoutHandlers = this.messageHandlers.get('FORCE_LOGOUT') || []
-    logoutHandlers.forEach(handler => handler(message))
+    console.log(`🔔 UnifiedWebSocket: 触发 ${logoutHandlers.length} 个强制登出处理器`)
+    logoutHandlers.forEach((handler, index) => {
+      try {
+        console.log(`📞 UnifiedWebSocket: 调用处理器 ${index + 1}`)
+        handler(message)
+      } catch (error) {
+        console.error(`❌ UnifiedWebSocket: 处理器 ${index + 1} 执行失败:`, error)
+      }
+    })
     
-    // 触发全局的登出处理
-    window.dispatchEvent(new CustomEvent('force-logout', { 
-      detail: message 
-    }))
+    // 移除全局事件触发，避免重复处理
+    // window.dispatchEvent(new CustomEvent('force-logout', { 
+    //   detail: message 
+    // }))
   }
 
   /**
@@ -180,22 +196,43 @@ export class UnifiedWebSocket {
    * 处理重连
    */
   private handleReconnect() {
+    // 检查是否允许重连
+    if (!this.shouldReconnect) {
+      console.log('🚫 重连已被禁用（可能是强制登出或主动断开）')
+      return
+    }
+
+    // 重连前检查token是否存在
+    const currentToken = this.getTokenFromCookie()
+    if (!currentToken || currentToken.trim() === '') {
+      console.log('🚫 重连失败：token已被清除，停止重连')
+      this.shouldReconnect = false
+      this.onDisconnectedCallback?.()
+      return
+    }
+
     if (this.reconnectAttempts < this.maxReconnectAttempts) {
       this.reconnectAttempts++
       console.log(`🔄 尝试重连... (${this.reconnectAttempts}/${this.maxReconnectAttempts})`)
+      
+      // 更新token（防止使用过期的token）
+      this.token = currentToken
+      this.url = `http://localhost:8080/ws?token=${encodeURIComponent(this.token)}`
+      
       setTimeout(() => {
         this.connect()
       }, this.reconnectInterval)
     } else {
       console.error('❌ 重连失败，已达到最大尝试次数')
+      this.shouldReconnect = false
     }
   }
 
   /**
-   * 从Cookie获取JWT token
+   * 从localStorage获取JWT token
    */
   private getTokenFromCookie(): string {
-    return Cookies.get('token') || ''
+    return localStorage.getItem('fivebear-token') || ''
   }
 
   // ==================== 事件监听器 ====================
@@ -222,7 +259,16 @@ export class UnifiedWebSocket {
     if (!this.messageHandlers.has(type)) {
       this.messageHandlers.set(type, [])
     }
-    this.messageHandlers.get(type)!.push(handler)
+    
+    const handlers = this.messageHandlers.get(type)!
+    
+    // 避免重复添加同一个处理器
+    if (!handlers.includes(handler)) {
+      handlers.push(handler)
+      console.log(`📋 注册 ${type} 消息处理器，当前处理器数量: ${handlers.length}`)
+    } else {
+      console.log(`⚠️ ${type} 消息处理器已存在，跳过重复注册`)
+    }
   }
 
   /**
@@ -315,8 +361,10 @@ export function getGlobalWebSocket(): UnifiedWebSocket {
  */
 export function initGlobalWebSocket(token?: string): UnifiedWebSocket {
   if (globalWebSocket) {
+    console.log('🔄 关闭现有WebSocket连接')
     globalWebSocket.disconnect()
   }
+  console.log('🚀 创建新的WebSocket连接')
   globalWebSocket = new UnifiedWebSocket(token)
   globalWebSocket.connect()
   return globalWebSocket

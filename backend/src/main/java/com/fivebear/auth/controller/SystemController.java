@@ -16,13 +16,13 @@ import java.util.Map;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.core.RedisTemplate;
-import org.springframework.http.ResponseEntity;
 import org.springframework.jdbc.core.JdbcTemplate;
-import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+
+import com.fivebear.common.result.Result;
 
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -30,7 +30,6 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 @Tag(name = "系统监控接口", description = "系统状态和监控相关API")
 @RestController
 @RequestMapping("/api/system")
-@CrossOrigin(origins = "*")
 public class SystemController {
 
     @Autowired(required = false)
@@ -38,11 +37,13 @@ public class SystemController {
     
     @Autowired
     private JdbcTemplate jdbcTemplate;
+    
+    @Autowired(required = false)
+    private org.springframework.context.ApplicationContext applicationContext;
 
     @Operation(summary = "获取系统状态")
     @GetMapping("/status")
-    public ResponseEntity<?> getSystemStatus() {
-        Map<String, Object> result = new HashMap<>();
+    public Result<Map<String, Object>> getSystemStatus() {
         Map<String, Object> data = new HashMap<>();
         
         try {
@@ -110,23 +111,16 @@ public class SystemController {
             data.put("redis", redisStatus);
             data.put("timestamp", System.currentTimeMillis());
             
-            result.put("code", 200);
-            result.put("message", "获取系统状态成功");
-            result.put("data", data);
+            return Result.ok(data, "获取系统状态成功");
             
         } catch (Exception e) {
-            result.put("code", 500);
-            result.put("message", "获取系统状态失败: " + e.getMessage());
-            result.put("timestamp", System.currentTimeMillis());
+            return Result.fail("获取系统状态失败: " + e.getMessage());
         }
-        
-        return ResponseEntity.ok(result);
     }
 
     @Operation(summary = "获取系统统计信息")
     @GetMapping("/statistics")
-    public ResponseEntity<?> getStatistics() {
-        Map<String, Object> result = new HashMap<>();
+    public Result<Map<String, Object>> getStatistics() {
         Map<String, Object> data = new HashMap<>();
         
         try {
@@ -155,23 +149,16 @@ public class SystemController {
             data.put("sites", siteStats);
             data.put("timestamp", System.currentTimeMillis());
             
-            result.put("code", 200);
-            result.put("message", "获取统计信息成功");
-            result.put("data", data);
+            return Result.ok(data, "获取统计信息成功");
             
         } catch (Exception e) {
-            result.put("code", 500);
-            result.put("message", "获取统计信息失败: " + e.getMessage());
-            result.put("timestamp", System.currentTimeMillis());
+            return Result.fail("获取统计信息失败: " + e.getMessage());
         }
-        
-        return ResponseEntity.ok(result);
     }
 
     @Operation(summary = "获取最近活动日志")
     @GetMapping("/recent-activities")
-    public ResponseEntity<?> getRecentActivities() {
-        Map<String, Object> result = new HashMap<>();
+    public Result<List<Map<String, Object>>> getRecentActivities() {
         List<Map<String, Object>> activities = new ArrayList<>();
         
         try {
@@ -203,25 +190,16 @@ public class SystemController {
             activity3.put("username", "admin");
             activities.add(activity3);
             
-            result.put("code", 200);
-            result.put("message", "获取活动日志成功");
-            result.put("data", activities);
-            result.put("timestamp", System.currentTimeMillis());
+            return Result.ok(activities, "获取活动日志成功");
             
         } catch (Exception e) {
-            result.put("code", 500);
-            result.put("message", "获取活动日志失败: " + e.getMessage());
-            result.put("timestamp", System.currentTimeMillis());
+            return Result.fail("获取活动日志失败: " + e.getMessage());
         }
-        
-        return ResponseEntity.ok(result);
     }
 
     @Operation(summary = "检查管理员用户状态")
     @GetMapping("/check-admin")
-    public ResponseEntity<?> checkAdmin() {
-        Map<String, Object> result = new HashMap<>();
-        
+    public Result<Map<String, Object>> checkAdmin() {
         try {
             // 查询管理员用户信息
             List<Map<String, Object>> admins = jdbcTemplate.queryForList(
@@ -229,25 +207,21 @@ public class SystemController {
                 "FROM users WHERE role_id = 1 ORDER BY created_at"
             );
             
-            result.put("code", 200);
-            result.put("message", "查询成功");
-            result.put("data", Map.of(
+            Map<String, Object> data = Map.of(
                 "adminCount", admins.size(),
                 "admins", admins
-            ));
+            );
+            
+            return Result.ok(data, "查询成功");
             
         } catch (Exception e) {
-            result.put("code", 500);
-            result.put("message", "查询管理员失败: " + e.getMessage());
-            result.put("timestamp", System.currentTimeMillis());
+            return Result.fail("查询管理员失败: " + e.getMessage());
         }
-        
-        return ResponseEntity.ok(result);
     }
 
     @Operation(summary = "初始化管理员用户")
     @PostMapping("/init-admin")
-    public ResponseEntity<?> initAdmin() {
+    public Result<Map<String, Object>> initAdmin() {
         Map<String, Object> result = new HashMap<>();
         
         try {
@@ -261,7 +235,7 @@ public class SystemController {
                 result.put("code", 200);
                 result.put("message", "管理员用户已存在");
                 result.put("data", Map.of("adminExists", true));
-                return ResponseEntity.ok(result);
+                return Result.ok(result, "管理员用户已存在");
             }
             
             // 创建默认管理员用户
@@ -291,17 +265,53 @@ public class SystemController {
                     "password", "admin123",
                     "note", "请立即修改默认密码"
                 ));
+                return Result.ok(result, "管理员用户创建成功");
             } else {
                 result.put("code", 500);
                 result.put("message", "管理员用户创建失败");
+                return Result.fail("管理员用户创建失败");
             }
             
         } catch (Exception e) {
             result.put("code", 500);
             result.put("message", "初始化管理员失败: " + e.getMessage());
             result.put("timestamp", System.currentTimeMillis());
+            return Result.fail("初始化管理员失败: " + e.getMessage());
         }
-        
-        return ResponseEntity.ok(result);
+    }
+
+    @Operation(summary = "获取在线用户信息")
+    @GetMapping("/online-users")
+    public Result<Map<String, Object>> getOnlineUsers() {
+        try {
+            Map<String, Object> data = new HashMap<>();
+            
+            // 获取在线用户数量
+            int onlineUserCount = 0;
+            int totalConnections = 0;
+            
+            try {
+                if (applicationContext != null) {
+                    com.fivebear.websocket.UnifiedWebSocketHandler webSocketHandler = 
+                        applicationContext.getBean(com.fivebear.websocket.UnifiedWebSocketHandler.class);
+                    onlineUserCount = webSocketHandler.getOnlineUserCount();
+                    totalConnections = webSocketHandler.getTotalConnectionCount();
+                }
+            } catch (Exception e) {
+                // WebSocket handler not available
+            }
+            
+            data.put("onlineUserCount", onlineUserCount);
+            data.put("totalConnections", totalConnections);
+            data.put("timestamp", System.currentTimeMillis());
+            
+            // 如果需要更详细的在线用户信息，可以从Redis或数据库获取
+            // 这里简化处理，只返回统计数据
+            
+            return Result.ok(data, "获取在线用户信息成功");
+            
+        } catch (Exception e) {
+            return Result.fail("获取在线用户信息失败: " + e.getMessage());
+        }
     }
 } 

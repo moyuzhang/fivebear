@@ -15,7 +15,7 @@ import com.fivebear.auth.mapper.UserMapper;
 import com.fivebear.auth.service.AuthService;
 import com.fivebear.auth.service.LoginSecurityService;
 import com.fivebear.common.util.JwtUtil;
-import com.fivebear.websocket.LoginNotificationHandler;
+
 
 /**
  * 认证服务实现类
@@ -29,9 +29,11 @@ public class AuthServiceImpl implements AuthService {
     @Autowired(required = false)
     private LoginSecurityService loginSecurityService;
     
+
+    
     @Autowired(required = false)
     @Lazy
-    private LoginNotificationHandler loginNotificationHandler;
+    private com.fivebear.websocket.UnifiedWebSocketHandler unifiedWebSocketHandler;
 
     public AuthServiceImpl(UserMapper userMapper, JwtUtil jwtUtil) {
         this.userMapper = userMapper;
@@ -97,9 +99,17 @@ public class AuthServiceImpl implements AuthService {
         String token = jwtUtil.generateToken(user.getId(), user.getUsername());
 
         // 通过WebSocket通知用户在其他地方登录（在强制下线之前）
-        if (loginNotificationHandler != null && loginNotificationHandler.isUserOnline(username)) {
-            loginNotificationHandler.notifyUserLoginElsewhere(username, token);
-            System.out.println("已通过WebSocket通知用户 " + username + " 在其他地方登录");
+        boolean userNotified = false;
+        
+        // 使用UnifiedWebSocketHandler通知多地登录
+        if (unifiedWebSocketHandler != null) {
+            unifiedWebSocketHandler.sendForceLogoutNotification(username, "检测到其他设备登录");
+            userNotified = true;
+            System.out.println("已通过统一WebSocket通知用户 " + username + " 在其他地方登录");
+        }
+        
+        if (!userNotified) {
+            System.out.println("用户 " + username + " 当前不在线，无需发送强制下线通知");
         }
 
         // 强制其他地方的登录下线（限制多地登录）

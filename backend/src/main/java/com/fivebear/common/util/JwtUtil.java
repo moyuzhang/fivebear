@@ -15,14 +15,14 @@ import io.jsonwebtoken.security.Keys;
  */
 @Component
 public class JwtUtil {
-    
+
     // JWT密钥
     private static final String SECRET = "FiveBearSystemSecretKeyForJWTTokenGeneration2024";
     private static final Key key = Keys.hmacShaKeyFor(SECRET.getBytes());
-    
+
     // Token过期时间（24小时）
     private static final long EXPIRATION_TIME = 24L * 60 * 60 * 1000;
-    
+
     /**
      * 生成Token
      */
@@ -36,14 +36,14 @@ public class JwtUtil {
                 .signWith(key)
                 .compact();
     }
-    
+
     /**
      * 从Token中获取用户名
      */
     public String getUsernameFromToken(String token) {
         return getClaimsFromToken(token).getSubject();
     }
-    
+
     /**
      * 从Token中获取用户ID
      */
@@ -51,7 +51,7 @@ public class JwtUtil {
         Claims claims = getClaimsFromToken(token);
         return Long.valueOf(claims.get("userId").toString());
     }
-    
+
     /**
      * 验证Token是否有效
      */
@@ -63,7 +63,7 @@ public class JwtUtil {
             return false;
         }
     }
-    
+
     /**
      * 检查Token是否过期
      */
@@ -75,7 +75,7 @@ public class JwtUtil {
             return true;
         }
     }
-    
+
     /**
      * 从Token中获取Claims
      */
@@ -86,4 +86,4 @@ public class JwtUtil {
                 .parseSignedClaims(token)
                 .getPayload();
     }
-} 
+}

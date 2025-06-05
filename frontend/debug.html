@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>WebSocket 调试工具</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        .container {
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            padding: 20px;
+            margin: 10px 0;
+        }
+        button {
+            background: #409eff;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 4px;
+            margin: 5px;
+            cursor: pointer;
+        }
+        button:hover {
+            background: #66b1ff;
+        }
+        #log {
+            background: #f5f5f5;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            padding: 10px;
+            height: 300px;
+            overflow-y: auto;
+            font-family: monospace;
+            font-size: 12px;
+        }
+        .log-entry {
+            margin: 2px 0;
+            padding: 2px;
+        }
+        .info { color: #409eff; }
+        .warning { color: #e6a23c; }
+        .error { color: #f56c6c; }
+        .success { color: #67c23a; }
+    </style>
+</head>
+<body>
+    <h1>🐻 FiveBear WebSocket 调试工具</h1>
+    
+    <div class="container">
+        <h3>控制面板</h3>
+        <button onclick="testMultipleLogin()">测试多设备登录</button>
+        <button onclick="simulateForceLogout()">模拟强制登出</button>
+        <button onclick="checkEventListeners()">检查事件监听器数量</button>
+        <button onclick="clearLog()">清空日志</button>
+    </div>
+    
+    <div class="container">
+        <h3>实时日志</h3>
+        <div id="log"></div>
+    </div>
+
+    <script>
+        // 日志函数
+        function log(message, type = 'info') {
+            const logDiv = document.getElementById('log');
+            const timestamp = new Date().toLocaleTimeString();
+            const entry = document.createElement('div');
+            entry.className = `log-entry ${type}`;
+            entry.textContent = `[${timestamp}] ${message}`;
+            logDiv.appendChild(entry);
+            logDiv.scrollTop = logDiv.scrollHeight;
+        }
+
+        // 劫持console.log来显示在页面上
+        const originalConsoleLog = console.log;
+        const originalConsoleWarn = console.warn;
+        const originalConsoleError = console.error;
+
+        console.log = function(...args) {
+            originalConsoleLog.apply(console, args);
+            log(args.join(' '), 'info');
+        };
+
+        console.warn = function(...args) {
+            originalConsoleWarn.apply(console, args);
+            log(args.join(' '), 'warning');
+        };
+
+        console.error = function(...args) {
+            originalConsoleError.apply(console, args);
+            log(args.join(' '), 'error');
+        };
+
+        // 测试函数
+        function testMultipleLogin() {
+            log('🧪 开始测试多设备登录场景', 'info');
+            // 这里可以添加具体的测试逻辑
+        }
+
+        function simulateForceLogout() {
+            log('🧪 模拟强制登出消息', 'warning');
+            // 发送自定义事件模拟强制登出
+            window.dispatchEvent(new CustomEvent('force-logout', {
+                detail: {
+                    type: 'FORCE_LOGOUT',
+                    message: '测试强制登出消息',
+                    timestamp: new Date().toISOString()
+                }
+            }));
+        }
+
+        function checkEventListeners() {
+            log('🔍 检查事件监听器...', 'info');
+            // 这里可以添加检查逻辑
+        }
+
+        function clearLog() {
+            document.getElementById('log').innerHTML = '';
+        }
+
+        // 页面加载完成
+        window.addEventListener('load', () => {
+            log('🚀 调试工具已加载', 'success');
+        });
+
+        // 监听强制登出事件
+        window.addEventListener('force-logout', (event) => {
+            log('📢 收到强制登出事件: ' + JSON.stringify(event.detail), 'warning');
+        });
+    </script>
+</body>
+</html> 

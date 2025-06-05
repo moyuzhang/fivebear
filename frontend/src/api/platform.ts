@@ -146,21 +146,14 @@ export class PlatformWebSocket {
   private onStatusChangeCallback?: (status: string) => void
 
   constructor(token?: string) {
-    // 从Cookie获取JWT token
-    this.token = token || this.getTokenFromCookie()
+    // 从localStorage获取JWT token
+    this.token = token || this.getTokenFromLocalStorage()
     this.url = `ws://localhost:8080/platform/ws?token=${this.token}`
   }
 
-  private getTokenFromCookie(): string {
-    // 从document.cookie中获取token
-    const cookies = document.cookie.split(';')
-    for (const cookie of cookies) {
-      const [key, value] = cookie.trim().split('=')
-      if (key === 'token') {
-        return decodeURIComponent(value)
-      }
-    }
-    return ''
+  private getTokenFromLocalStorage(): string {
+    // 从localStorage获取token
+    return localStorage.getItem('fivebear-token') || ''
   }
 
   connect() {

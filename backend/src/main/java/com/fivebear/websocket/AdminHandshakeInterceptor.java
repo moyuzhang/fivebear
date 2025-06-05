@@ -12,10 +12,11 @@ import org.springframework.web.socket.server.HandshakeInterceptor;
 import com.fivebear.common.util.JwtUtil;
 
 /**
- * WebSocket握手拦截器，用于验证JWT token
+ * 管理功能WebSocket握手拦截器
+ * 支持有token时认证，无token时允许匿名连接（用于系统监控）
  */
 @Component
-public class TokenHandshakeInterceptor implements HandshakeInterceptor {
+public class AdminHandshakeInterceptor implements HandshakeInterceptor {
 
     @Autowired
     private JwtUtil jwtUtil;
@@ -27,35 +28,40 @@ public class TokenHandshakeInterceptor implements HandshakeInterceptor {
         // 从查询参数或请求头中获取token
         String token = getTokenFromRequest(request);
 
-        if (token == null || token.trim().isEmpty()) {
-            System.err.println("WebSocket握手失败: 缺少token或token为空");
-            response.setStatusCode(org.springframework.http.HttpStatus.UNAUTHORIZED);
-            return false;
-        }
+        if (token != null) {
+            // 如果提供了token，验证token
+            if (jwtUtil.validateToken(token)) {
+                try {
+                    String username = jwtUtil.getUsernameFromToken(token);
+                    Long userId = jwtUtil.getUserIdFromToken(token);
 
-        // 验证token
-        if (!jwtUtil.validateToken(token)) {
-            System.err.println("WebSocket握手失败: token无效");
-            response.setStatusCode(org.springframework.http.HttpStatus.UNAUTHORIZED);
-            return false;
-        }
+                    attributes.put("username", username);
+                    attributes.put("userId", userId);
+                    attributes.put("token", token);
+                    attributes.put("authenticated", true);
 
-        // 将用户信息存储在attributes中，供后续使用
-        try {
-            String username = jwtUtil.getUsernameFromToken(token);
-            Long userId = jwtUtil.getUserIdFromToken(token);
+                    System.out.println("管理WebSocket握手成功: 用户 " + username + " (ID: " + userId + ")");
+                    return true;
 
-            attributes.put("username", username);
-            attributes.put("userId", userId);
-            attributes.put("token", token);
+                } catch (Exception e) {
+                    System.err.println("管理WebSocket握手失败: 解析token出错 - " + e.getMessage());
+                    response.setStatusCode(org.springframework.http.HttpStatus.UNAUTHORIZED);
+                    return false;
+                }
+            } else {
+                System.err.println("管理WebSocket握手失败: token无效");
+                response.setStatusCode(org.springframework.http.HttpStatus.UNAUTHORIZED);
+                return false;
+            }
+        } else {
+            // 没有token，允许匿名连接（仅限系统监控功能）
+            attributes.put("username", "anonymous");
+            attributes.put("userId", null);
+            attributes.put("token", null);
+            attributes.put("authenticated", false);
 
-            System.out.println("WebSocket握手成功: 用户 " + username + " (ID: " + userId + ")");
+            System.out.println("管理WebSocket握手成功: 匿名连接（系统监控）");
             return true;
-
-        } catch (Exception e) {
-            System.err.println("WebSocket握手失败: 解析token出错 - " + e.getMessage());
-            response.setStatusCode(org.springframework.http.HttpStatus.UNAUTHORIZED);
-            return false;
         }
     }
 
@@ -64,7 +70,7 @@ public class TokenHandshakeInterceptor implements HandshakeInterceptor {
             WebSocketHandler wsHandler, Exception exception) {
         // 握手后的处理（可以为空）
         if (exception != null) {
-            System.err.println("WebSocket握手后出现异常: " + exception.getMessage());
+            System.err.println("管理WebSocket握手后出现异常: " + exception.getMessage());
         }
     }
 
@@ -99,4 +105,4 @@ public class TokenHandshakeInterceptor implements HandshakeInterceptor {
 
         return null;
     }
-}
+} 

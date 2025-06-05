@@ -178,9 +178,9 @@
 </template>
 
 <script setup lang="ts">
-import { ref, reactive, onMounted } from 'vue'
+import { ref, reactive, onMounted, onUnmounted } from 'vue'
 import Layout from '@/components/Layout.vue'
-import { getSystemStatus, getStatistics, getRecentActivities, type Activity } from '@/api/admin'
+import { getSystemStatus, getStatistics, getRecentActivities, getOnlineUsers, type Activity } from '@/api/admin'
 import { ElMessage } from 'element-plus'
 import { 
   UserFilled, 
@@ -188,13 +188,14 @@ import {
   Key, 
   Document
 } from '@element-plus/icons-vue'
+import { UnifiedWebSocket } from '@/utils/unifiedWebSocket'
 
 // Router removed as navigation is no longer needed
 
 // 统计数据
 const stats = reactive({
   totalUsers: 0,
-  onlineUsers: 128, // 模拟在线用户数
+  onlineUsers: 0, // 实时在线用户数，通过WebSocket更新
   totalRoles: 0,
   todayLogs: 0
 })
@@ -217,6 +218,9 @@ const recentActivities = ref<Activity[]>([])
 
 // 加载状态
 const loading = ref(false)
+
+// WebSocket连接
+const webSocket = ref<UnifiedWebSocket | null>(null)
 
 // 加载统计数据
 const loadStats = async () => {
@@ -241,6 +245,12 @@ const loadStats = async () => {
     const activitiesRes = await getRecentActivities()
     if (activitiesRes.code === 200) {
       recentActivities.value = activitiesRes.data
+    }
+    
+    // 加载在线用户数量
+    const onlineUsersRes = await getOnlineUsers()
+    if (onlineUsersRes.code === 200) {
+      stats.onlineUsers = onlineUsersRes.data.onlineUserCount || 0
     }
     
   } catch (error) {
@@ -285,9 +295,44 @@ const getActivityType = (type: string) => {
   }
 }
 
+// 初始化WebSocket连接
+const initWebSocket = () => {
+  try {
+    webSocket.value = new UnifiedWebSocket()
+    
+    webSocket.value.onConnected(() => {
+      console.log('✅ 管理后台WebSocket连接成功')
+    })
+    
+    webSocket.value.onDisconnected(() => {
+      console.log('🔌 管理后台WebSocket连接断开')
+    })
+    
+    // 监听在线用户数量更新
+    webSocket.value.onMessage('ONLINE_USER_COUNT', (message) => {
+      console.log('📊 收到在线用户数量更新:', message)
+      if (message.data && typeof message.data === 'number') {
+        stats.onlineUsers = message.data
+      }
+    })
+    
+    webSocket.value.connect()
+  } catch (error) {
+    console.error('❌ WebSocket初始化失败:', error)
+  }
+}
+
 // 组件挂载时加载数据
 onMounted(() => {
   loadStats()
+  initWebSocket()
+})
+
+// 组件卸载时断开WebSocket连接
+onUnmounted(() => {
+  if (webSocket.value) {
+    webSocket.value.disconnect()
+  }
 })
 </script>
 

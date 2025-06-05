@@ -75,6 +75,9 @@
         <slot />
       </div>
     </div>
+    
+    <!-- 消息通知组件 -->
+    <MessageNotification ref="messageNotificationRef" />
   </div>
 </template>
 
@@ -85,6 +88,7 @@ import { ElMessage, ElMessageBox } from 'element-plus'
 import { ArrowDown, User, Setting, SwitchButton, Expand, Fold } from '@element-plus/icons-vue'
 import { useUserStore } from '@/stores/user'
 import SidebarNavigation from './SidebarNavigation.vue'
+import MessageNotification from './MessageNotification.vue'
 
 const router = useRouter()
 const route = useRoute()

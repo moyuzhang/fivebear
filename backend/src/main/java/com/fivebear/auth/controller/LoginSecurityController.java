@@ -4,13 +4,13 @@ import java.util.HashMap;
 import java.util.Map;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.fivebear.auth.service.LoginSecurityService;
+import com.fivebear.common.result.Result;
 
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -28,21 +28,12 @@ public class LoginSecurityController {
     
     @Operation(summary = "检查账户锁定状态")
     @GetMapping("/lock-status")
-    public ResponseEntity<?> checkLockStatus(@RequestParam(required = true) String username) {
+    public Result<Map<String, Object>> checkLockStatus(@RequestParam(required = true) String username) {
         try {
             // 参数验证
             if (username == null || username.trim().isEmpty()) {
-                Map<String, Object> error = new HashMap<>();
-                error.put("code", 400);
-                error.put("message", "用户名参数不能为空");
-                error.put("timestamp", System.currentTimeMillis());
-                return ResponseEntity.badRequest().body(error);
+                return Result.fail(400, "用户名参数不能为空");
             }
-            
-            Map<String, Object> result = new HashMap<>();
-            result.put("code", 200);
-            result.put("message", "查询成功");
-            result.put("timestamp", System.currentTimeMillis());
             
             Map<String, Object> data = new HashMap<>();
             
@@ -66,15 +57,10 @@ public class LoginSecurityController {
                 }
             }
             
-            result.put("data", data);
-            return ResponseEntity.ok(result);
+            return Result.ok(data, "查询成功");
             
         } catch (Exception e) {
-            Map<String, Object> error = new HashMap<>();
-            error.put("code", 500);
-            error.put("message", "查询账户状态失败: " + e.getMessage());
-            error.put("timestamp", System.currentTimeMillis());
-            return ResponseEntity.internalServerError().body(error);
+            return Result.fail(500, "查询账户状态失败: " + e.getMessage());
         }
     }
 } 
