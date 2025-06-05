@@ -179,9 +179,8 @@
 
 <script setup lang="ts">
 import { ref, reactive, onMounted } from 'vue'
-import { useRouter } from 'vue-router'
 import Layout from '@/components/Layout.vue'
-import { getSystemStatus, getStatistics, getRecentActivities } from '@/api/admin'
+import { getSystemStatus, getStatistics, getRecentActivities, type Activity } from '@/api/admin'
 import { ElMessage } from 'element-plus'
 import { 
   UserFilled, 
@@ -190,7 +189,7 @@ import {
   Document
 } from '@element-plus/icons-vue'
 
-const router = useRouter()
+// Router removed as navigation is no longer needed
 
 // 统计数据
 const stats = reactive({
@@ -214,7 +213,7 @@ const systemStatus = ref({
 })
 
 // 最近活动数据
-const recentActivities = ref([])
+const recentActivities = ref<Activity[]>([])
 
 // 加载状态
 const loading = ref(false)
