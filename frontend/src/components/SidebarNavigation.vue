@@ -265,30 +265,62 @@ defineExpose({ isCollapsed })
 }
 
 .sidebar-menu .el-menu-item {
-  color: rgba(255, 255, 255, 0.65);
+  color: #ffffff !important;
   height: 48px;
   line-height: 48px;
+  font-size: 14px !important;
+  font-weight: 500 !important;
+}
+
+.sidebar-menu .el-menu-item span {
+  color: #ffffff !important;
 }
 
 .sidebar-menu .el-menu-item:hover {
-  background-color: #1890ff;
-  color: #fff;
+  background-color: #1890ff !important;
+  color: #fff !important;
+}
+
+.sidebar-menu .el-menu-item:hover span {
+  color: #fff !important;
 }
 
 .sidebar-menu .el-menu-item.is-active {
-  background-color: #1890ff;
-  color: #fff;
+  background-color: #1890ff !important;
+  color: #fff !important;
+}
+
+.sidebar-menu .el-menu-item.is-active span {
+  color: #fff !important;
 }
 
 .sidebar-menu .el-sub-menu .el-sub-menu__title {
-  color: rgba(255, 255, 255, 0.65);
+  color: #ffffff !important;
   height: 48px;
   line-height: 48px;
+  font-size: 14px !important;
+  font-weight: 500 !important;
+}
+
+.sidebar-menu .el-sub-menu .el-sub-menu__title span {
+  color: #ffffff !important;
 }
 
 .sidebar-menu .el-sub-menu .el-sub-menu__title:hover {
-  background-color: #1890ff;
-  color: #fff;
+  background-color: #1890ff !important;
+  color: #fff !important;
+}
+
+.sidebar-menu .el-sub-menu .el-sub-menu__title:hover span {
+  color: #fff !important;
+}
+
+.sidebar-menu .el-sub-menu.is-active .el-sub-menu__title {
+  color: #fff !important;
+}
+
+.sidebar-menu .el-sub-menu.is-active .el-sub-menu__title span {
+  color: #fff !important;
 }
 
 .sidebar-menu .el-sub-menu .el-menu {
@@ -326,7 +358,7 @@ defineExpose({ isCollapsed })
 
 .role {
   font-size: 12px;
-  color: rgba(255, 255, 255, 0.65);
+  color: rgba(255, 255, 255, 0.8);
 }
 
 /* 调整主内容区域的左边距 */
