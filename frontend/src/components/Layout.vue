@@ -19,16 +19,24 @@
         </div>
         
         <div class="header-right">
-          <el-dropdown @command="handleCommand">
-            <span class="user-info">
-              <el-avatar :size="35" class="user-avatar">
-                {{ userStore.userInfo?.nickname?.charAt(0) || 'U' }}
+          <!-- 用户信息展示 -->
+          <div class="user-display">
+            <div class="user-welcome">
+              <span class="welcome-text">欢迎回来</span>
+              <span class="user-name">{{ userStore.userInfo?.username || '用户' }}</span>
+            </div>
+          </div>
+          
+          <!-- 用户下拉菜单 -->
+          <el-dropdown @command="handleCommand" trigger="click">
+            <div class="user-info">
+              <el-avatar :size="36" class="user-avatar">
+                {{ userStore.userInfo?.username?.charAt(0).toUpperCase() || 'U' }}
               </el-avatar>
-              <span class="username">{{ userStore.userInfo?.nickname || '用户' }}</span>
-              <el-icon class="el-icon--right">
+              <el-icon class="dropdown-icon">
                 <arrow-down />
               </el-icon>
-            </span>
+            </div>
             <template #dropdown>
               <el-dropdown-menu>
                 <el-dropdown-item command="profile">
@@ -186,68 +194,108 @@ const handleLogout = async () => {
 
 .top-header {
   height: 64px;
-  background: #fff;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  background: white;
+  box-shadow: var(--shadow-sm);
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 0 20px;
+  padding: 0 var(--space-6);
   position: sticky;
   top: 0;
   z-index: 100;
+  border-bottom: 1px solid var(--gray-200);
 }
 
 .header-left {
   display: flex;
   align-items: center;
-  gap: 12px;
+  gap: var(--space-3);
 }
 
 .sidebar-toggle-btn {
-  color: #606266;
+  color: var(--gray-500);
   font-size: 18px;
+  border-radius: var(--radius-md);
+  transition: all var(--transition-base);
 }
 
 .sidebar-toggle-btn:hover {
-  color: #409eff;
-  background-color: #f0f2f5;
+  color: var(--primary-600);
+  background-color: var(--gray-100);
 }
 
 .header-left h2 {
   margin: 0;
-  color: #409eff;
-  font-size: 20px;
+  color: var(--primary-600);
+  font-size: var(--text-xl);
+  font-weight: var(--font-weight-bold);
 }
 
 .header-right {
   display: flex;
   align-items: center;
+  gap: var(--space-4);
 }
 
+/* 用户信息展示区域 */
+.user-display {
+  text-align: right;
+  padding-right: var(--space-3);
+  border-right: 1px solid var(--gray-200);
+}
+
+.user-welcome {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: var(--space-1);
+}
+
+.welcome-text {
+  font-size: var(--text-xs);
+  color: var(--gray-500);
+  font-weight: var(--font-weight-medium);
+}
+
+.user-name {
+  font-size: var(--text-lg);
+  color: var(--gray-900);
+  font-weight: var(--font-weight-bold);
+}
+
+
+
+/* 用户头像下拉菜单 */
 .user-info {
   display: flex;
   align-items: center;
-  padding: 8px 16px;
+  gap: var(--space-2);
+  padding: var(--space-2);
   cursor: pointer;
-  border-radius: 4px;
-  transition: background-color 0.3s;
+  border-radius: var(--radius-md);
+  transition: all var(--transition-base);
 }
 
 .user-info:hover {
-  background-color: #f5f5f5;
+  background-color: var(--gray-100);
 }
 
 .user-avatar {
-  margin-right: 8px;
-  background-color: #409eff;
+  background: var(--primary-600);
   color: white;
-  font-weight: bold;
+  font-weight: var(--font-weight-bold);
+  box-shadow: var(--shadow-sm);
 }
 
-.username {
-  margin-right: 8px;
+.dropdown-icon {
+  color: var(--gray-500);
   font-size: 14px;
-  color: #606266;
+  transition: transform var(--transition-base);
+}
+
+.user-info:hover .dropdown-icon {
+  color: var(--primary-600);
+  transform: rotate(180deg);
 }
 
 .breadcrumb-container {

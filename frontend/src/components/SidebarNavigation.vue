@@ -140,10 +140,10 @@
     <div class="sidebar-footer" v-if="!isCollapsed">
       <div class="user-info">
         <el-avatar :size="32" class="user-avatar">
-          {{ userStore.userInfo?.nickname?.charAt(0) || 'U' }}
+          {{ userStore.userInfo?.username?.charAt(0).toUpperCase() || 'U' }}
         </el-avatar>
         <div class="user-details">
-          <div class="username">{{ userStore.userInfo?.nickname }}</div>
+          <div class="username">{{ userStore.userInfo?.username }}</div>
           <div class="role">{{ userStore.userInfo?.roleName }}</div>
         </div>
       </div>
