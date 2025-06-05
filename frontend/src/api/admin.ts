@@ -89,4 +89,76 @@ export const adminApi = {
   exportAdmins(params: any): Promise<Result<string>> {
     return request.post('/admin/export', params)
   }
+}
+
+// 获取系统状态
+export const getSystemStatus = () => {
+  return request.get('/api/admin/system-status')
+}
+
+// 获取系统统计信息
+export const getStatistics = () => {
+  return request.get('/api/admin/statistics')
+}
+
+// 获取最近活动日志
+export const getRecentActivities = () => {
+  return request.get('/api/admin/recent-activities')
+}
+
+// 系统状态接口类型定义
+export interface SystemStatus {
+  systemInfo: {
+    javaVersion: string
+    osName: string
+    osArch: string
+    processors: number
+    uptime: number
+    startTime: string
+  }
+  memory: {
+    used: number
+    max: number
+    total: number
+    usedMB: number
+    maxMB: number
+    totalMB: number
+    usagePercent: number
+  }
+  database: {
+    connected: boolean
+    productName?: string
+    productVersion?: string
+    url?: string
+    error?: string
+  }
+  redis: {
+    connected: boolean
+    error?: string
+  }
+  timestamp: number
+}
+
+// 统计信息接口类型定义
+export interface Statistics {
+  users: {
+    total: number
+  }
+  roles: {
+    total: number
+  }
+  sites: {
+    total: number
+    note?: string
+  }
+  timestamp: number
+}
+
+// 活动日志接口类型定义
+export interface Activity {
+  id: number
+  time: string
+  type: string
+  description: string
+  username: string
 } 
