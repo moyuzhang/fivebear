@@ -1,0 +1,193 @@
+@import './variables.scss';
+
+// 全局重置和基础样式
+* {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  margin: 0;
+  padding: 0;
+  height: 100%;
+  font-family: $font-family;
+  font-size: $font-size-sm;
+  color: $text-primary;
+  background-color: $bg-color;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+// 滚动条美化
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: $divider-color;
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb {
+  background: $text-disabled;
+  border-radius: 4px;
+  transition: background $duration-fast;
+
+  &:hover {
+    background: $text-secondary;
+  }
+}
+
+// 全局过渡动画
+.fade-enter-active,
+.fade-leave-active {
+  transition: opacity $duration-base;
+}
+
+.fade-enter-from,
+.fade-leave-to {
+  opacity: 0;
+}
+
+.slide-fade-enter-active,
+.slide-fade-leave-active {
+  transition: all $duration-base;
+}
+
+.slide-fade-enter-from {
+  transform: translateX(-10px);
+  opacity: 0;
+}
+
+.slide-fade-leave-to {
+  transform: translateX(10px);
+  opacity: 0;
+}
+
+// 卡片样式
+.app-card {
+  background: $card-bg;
+  border-radius: $radius-lg;
+  box-shadow: $shadow-sm;
+  transition: all $duration-base;
+  
+  &:hover {
+    box-shadow: $shadow-md;
+  }
+}
+
+// 按钮增强
+.el-button {
+  border-radius: $radius-md;
+  font-weight: 500;
+  transition: all $duration-fast;
+  
+  &--primary {
+    background: linear-gradient(135deg, $primary-light 0%, $primary-color 100%);
+    border-color: $primary-color;
+    
+    &:hover {
+      background: linear-gradient(135deg, $primary-color 0%, $primary-dark 100%);
+      transform: translateY(-1px);
+      box-shadow: $shadow-md;
+    }
+  }
+}
+
+// 表格美化
+.el-table {
+  border-radius: $radius-lg;
+  overflow: hidden;
+  
+  th {
+    background-color: $bg-color;
+    font-weight: 600;
+    color: $text-primary;
+  }
+  
+  td {
+    color: $text-regular;
+  }
+  
+  .el-table__row:hover > td {
+    background-color: $primary-bg !important;
+  }
+}
+
+// 标签美化
+.el-tag {
+  border-radius: $radius-sm;
+  font-weight: 500;
+}
+
+// 输入框美化
+.el-input__wrapper {
+  border-radius: $radius-md;
+  transition: all $duration-fast;
+  
+  &:hover {
+    border-color: $primary-light;
+  }
+  
+  &.is-focus {
+    border-color: $primary-color;
+    box-shadow: 0 0 0 2px $primary-bg;
+  }
+}
+
+// 对话框美化
+.el-dialog {
+  border-radius: $radius-lg;
+  box-shadow: $shadow-xl;
+  
+  .el-dialog__header {
+    border-bottom: 1px solid $divider-color;
+    padding: $spacing-lg;
+  }
+  
+  .el-dialog__body {
+    padding: $spacing-lg;
+  }
+}
+
+// 加载动画
+@keyframes pulse {
+  0% {
+    transform: scale(1);
+    opacity: 1;
+  }
+  50% {
+    transform: scale(1.05);
+    opacity: 0.8;
+  }
+  100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
+.pulse-animation {
+  animation: pulse 2s ease-in-out infinite;
+}
+
+// 渐变背景
+.gradient-bg {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+}
+
+.gradient-primary {
+  background: linear-gradient(135deg, $primary-light 0%, $primary-color 100%);
+}
+
+.gradient-success {
+  background: linear-gradient(135deg, #84fab0 0%, #8fd3f4 100%);
+}
+
+// 玻璃态效果
+.glass-effect {
+  background: rgba(255, 255, 255, 0.7);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+}

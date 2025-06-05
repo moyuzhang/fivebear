@@ -1,17 +1,19 @@
 <template>
-  <div class="sidebar-navigation" :class="{ collapsed: isCollapsed }">
+  <aside class="sidebar" :class="{ collapsed: isCollapsed }">
     <!-- 侧边栏头部 -->
     <div class="sidebar-header">
-      <div class="logo" v-if="!isCollapsed">
-        <el-icon>🐻</el-icon>
+      <div class="logo-wrapper" v-if="!isCollapsed">
+        <span class="logo-icon">🐻</span>
         <span class="logo-text">FiveBear</span>
       </div>
       <el-button 
-        class="collapse-btn" 
-        :icon="isCollapsed ? Expand : Fold" 
-        @click="toggleCollapse"
+        v-else
+        class="logo-collapsed"
         text
-      />
+        @click="toggleCollapse"
+      >
+        🐻
+      </el-button>
     </div>
 
     <!-- 导航菜单 -->
@@ -20,16 +22,23 @@
       class="sidebar-menu"
       :collapse="isCollapsed"
       :unique-opened="true"
+      :collapse-transition="false"
       router
     >
       <!-- 仪表盘 -->
-      <el-menu-item index="/dashboard">
+      <el-menu-item index="/dashboard" class="menu-item-custom">
         <el-icon><Odometer /></el-icon>
         <template #title>仪表盘</template>
       </el-menu-item>
 
+      <!-- 站点管理 -->
+      <el-menu-item index="/sites" class="menu-item-custom">
+        <el-icon><Monitor /></el-icon>
+        <template #title>站点管理</template>
+      </el-menu-item>
+
       <!-- 管理员功能 -->
-      <el-sub-menu index="admin" v-if="userStore.userInfo?.roleName === '管理员'">
+      <el-sub-menu index="admin" v-if="userStore.userInfo?.roleName === '管理员'" class="submenu-custom">
         <template #title>
           <el-icon><UserFilled /></el-icon>
           <span>管理员功能</span>
@@ -72,7 +81,7 @@
       </el-sub-menu>
 
       <!-- 报表分析 -->
-      <el-sub-menu index="report">
+      <el-sub-menu index="report" class="submenu-custom">
         <template #title>
           <el-icon><TrendCharts /></el-icon>
           <span>报表分析</span>
@@ -95,7 +104,7 @@
       </el-sub-menu>
 
       <!-- 出货管理 -->
-      <el-sub-menu index="shipment">
+      <el-sub-menu index="shipment" class="submenu-custom">
         <template #title>
           <el-icon><Box /></el-icon>
           <span>出货管理</span>
@@ -116,30 +125,19 @@
           <template #title>物流跟踪</template>
         </el-menu-item>
       </el-sub-menu>
-
-      <!-- 个人中心 -->
-      <el-sub-menu index="profile">
-        <template #title>
-          <el-icon><Avatar /></el-icon>
-          <span>个人中心</span>
-        </template>
-        
-        <el-menu-item index="/profile">
-          <el-icon><User /></el-icon>
-          <template #title>个人信息</template>
-        </el-menu-item>
-        
-        <el-menu-item index="/profile/settings">
-          <el-icon><Tools /></el-icon>
-          <template #title>个人设置</template>
-        </el-menu-item>
-      </el-sub-menu>
     </el-menu>
 
     <!-- 侧边栏底部 -->
-    <div class="sidebar-footer" v-if="!isCollapsed">
-      <div class="user-info">
-        <el-avatar :size="32" class="user-avatar">
+    <div class="sidebar-footer">
+      <el-button 
+        class="collapse-btn" 
+        :icon="isCollapsed ? Expand : Fold" 
+        @click="toggleCollapse"
+        circle
+        size="small"
+      />
+      <div class="user-card" v-if="!isCollapsed">
+        <el-avatar :size="32" class="user-avatar gradient-primary">
           {{ userStore.userInfo?.nickname?.charAt(0) || 'U' }}
         </el-avatar>
         <div class="user-details">
@@ -148,7 +146,7 @@
         </div>
       </div>
     </div>
-  </div>
+  </aside>
 </template>
 
 <script setup lang="ts">
@@ -183,7 +181,7 @@ const toggleCollapse = () => {
 
 // 监听折叠状态变化，更新CSS变量
 watch(isCollapsed, (newVal) => {
-  document.documentElement.style.setProperty('--sidebar-width', newVal ? '64px' : '250px')
+  document.documentElement.style.setProperty('--sidebar-width', newVal ? '64px' : '260px')
 }, { immediate: true })
 
 // 监听来自Layout组件的折叠事件
@@ -203,139 +201,257 @@ onUnmounted(() => {
 defineExpose({ isCollapsed })
 </script>
 
-<style scoped>
-.sidebar-navigation {
-  width: 250px;
+<style scoped lang="scss">
+@import '@/styles/variables.scss';
+
+.sidebar {
+  width: $sidebar-width;
   height: 100vh;
-  background: #001529;
+  background: linear-gradient(180deg, #1e3c72 0%, #2a5298 100%);
   position: fixed;
   left: 0;
   top: 0;
-  z-index: 999;
-  transition: all 0.3s ease;
+  z-index: $z-index-fixed;
+  transition: all $duration-base cubic-bezier(0.4, 0, 0.2, 1);
   display: flex;
   flex-direction: column;
+  box-shadow: 2px 0 20px rgba(0, 0, 0, 0.1);
+  
+  &.collapsed {
+    width: $sidebar-collapsed-width;
+    
+    .sidebar-header {
+      padding: $spacing-md $spacing-sm;
+    }
+  }
 }
 
-.sidebar-navigation.collapsed {
-  width: 64px;
-}
-
+// 头部样式
 .sidebar-header {
-  height: 64px;
+  height: $header-height;
   display: flex;
   align-items: center;
-  justify-content: space-between;
-  padding: 0 16px;
-  border-bottom: 1px solid #1890ff;
+  justify-content: center;
+  padding: $spacing-md $spacing-lg;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  background: rgba(255, 255, 255, 0.05);
+  backdrop-filter: blur(10px);
 }
 
-.logo {
+.logo-wrapper {
   display: flex;
   align-items: center;
-  color: #fff;
-  font-size: 18px;
-  font-weight: bold;
+  gap: $spacing-sm;
+  animation: slideInLeft 0.5s ease;
 }
 
-.logo .el-icon {
-  font-size: 24px;
-  margin-right: 8px;
-  color: #1890ff;
+.logo-icon {
+  font-size: 32px;
+  filter: drop-shadow(2px 2px 4px rgba(0, 0, 0, 0.2));
+  animation: bounce 2s ease-in-out infinite;
 }
 
 .logo-text {
-  color: #fff;
+  font-size: $font-size-xl;
+  font-weight: bold;
+  color: white;
+  text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.2);
 }
 
-.collapse-btn {
-  color: #fff;
+.logo-collapsed {
+  font-size: 28px;
+  width: 40px;
+  height: 40px;
+  padding: 0;
   border: none;
+  background: transparent;
+  
+  &:hover {
+    transform: scale(1.1);
+    filter: drop-shadow(0 0 10px rgba(255, 255, 255, 0.5));
+  }
 }
 
-.collapse-btn:hover {
-  background-color: #1890ff;
-}
-
+// 菜单样式
 .sidebar-menu {
   flex: 1;
   border: none;
-  background: #001529;
+  background: transparent;
   overflow-y: auto;
+  overflow-x: hidden;
+  padding: $spacing-md 0;
+  
+  &::-webkit-scrollbar {
+    width: 4px;
+  }
+  
+  &::-webkit-scrollbar-thumb {
+    background: rgba(255, 255, 255, 0.3);
+    border-radius: 2px;
+  }
+  
+  // 菜单项样式
+  :deep(.el-menu-item) {
+    color: rgba(255, 255, 255, 0.85);
+    margin: 0 $spacing-sm;
+    border-radius: $radius-md;
+    transition: all $duration-fast;
+    
+    &:hover {
+      background: rgba(255, 255, 255, 0.1);
+      color: white;
+    }
+    
+    &.is-active {
+      background: rgba(255, 255, 255, 0.2);
+      color: white;
+      font-weight: 600;
+      position: relative;
+      
+      &::before {
+        content: '';
+        position: absolute;
+        left: 0;
+        top: 50%;
+        transform: translateY(-50%);
+        width: 3px;
+        height: 70%;
+        background: white;
+        border-radius: 0 3px 3px 0;
+      }
+    }
+    
+    .el-icon {
+      font-size: 18px;
+    }
+  }
+  
+  // 子菜单样式
+  :deep(.el-sub-menu) {
+    .el-sub-menu__title {
+      color: rgba(255, 255, 255, 0.85);
+      margin: 0 $spacing-sm;
+      border-radius: $radius-md;
+      transition: all $duration-fast;
+      
+      &:hover {
+        background: rgba(255, 255, 255, 0.1);
+        color: white;
+      }
+      
+      .el-icon {
+        font-size: 18px;
+      }
+    }
+    
+    &.is-opened > .el-sub-menu__title {
+      background: rgba(255, 255, 255, 0.1);
+      color: white;
+    }
+    
+    .el-menu {
+      background: rgba(0, 0, 0, 0.1);
+      
+      .el-menu-item {
+        padding-left: 50px !important;
+        font-size: $font-size-sm;
+        min-height: 40px;
+      }
+    }
+  }
 }
 
-.sidebar-menu .el-menu-item {
-  color: rgba(255, 255, 255, 0.65);
-  height: 48px;
-  line-height: 48px;
-}
-
-.sidebar-menu .el-menu-item:hover {
-  background-color: #1890ff;
-  color: #fff;
-}
-
-.sidebar-menu .el-menu-item.is-active {
-  background-color: #1890ff;
-  color: #fff;
-}
-
-.sidebar-menu .el-sub-menu .el-sub-menu__title {
-  color: rgba(255, 255, 255, 0.65);
-  height: 48px;
-  line-height: 48px;
-}
-
-.sidebar-menu .el-sub-menu .el-sub-menu__title:hover {
-  background-color: #1890ff;
-  color: #fff;
-}
-
-.sidebar-menu .el-sub-menu .el-menu {
-  background-color: #000c17;
-}
-
+// 底部样式
 .sidebar-footer {
-  padding: 16px;
-  border-top: 1px solid #1890ff;
-  background: #000c17;
-}
-
-.user-info {
+  padding: $spacing-md;
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+  background: rgba(255, 255, 255, 0.05);
   display: flex;
   align-items: center;
+  gap: $spacing-md;
+}
+
+.collapse-btn {
+  background: rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  color: white;
+  transition: all $duration-fast;
+  
+  &:hover {
+    background: rgba(255, 255, 255, 0.2);
+    transform: rotate(180deg);
+  }
+}
+
+.user-card {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  gap: $spacing-sm;
+  padding: $spacing-sm;
+  border-radius: $radius-md;
+  background: rgba(255, 255, 255, 0.1);
+  backdrop-filter: blur(10px);
 }
 
 .user-avatar {
-  background-color: #1890ff;
-  color: white;
+  flex-shrink: 0;
   font-weight: bold;
-  margin-right: 12px;
+  color: white;
+  box-shadow: $shadow-md;
 }
 
 .user-details {
   flex: 1;
-  color: #fff;
+  min-width: 0;
 }
 
 .username {
-  font-size: 14px;
-  font-weight: 500;
-  margin-bottom: 2px;
+  font-size: $font-size-sm;
+  font-weight: 600;
+  color: white;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .role {
-  font-size: 12px;
-  color: rgba(255, 255, 255, 0.65);
+  font-size: $font-size-xs;
+  color: rgba(255, 255, 255, 0.7);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
-/* 调整主内容区域的左边距 */
-.sidebar-navigation + * {
-  margin-left: 250px;
-  transition: margin-left 0.3s ease;
+// 动画
+@keyframes slideInLeft {
+  from {
+    opacity: 0;
+    transform: translateX(-20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
 }
 
-.sidebar-navigation.collapsed + * {
-  margin-left: 64px;
+@keyframes bounce {
+  0%, 100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-5px);
+  }
+}
+
+// 响应式设计
+@media (max-width: 768px) {
+  .sidebar {
+    transform: translateX(-100%);
+    
+    &.mobile-open {
+      transform: translateX(0);
+    }
+  }
 }
 </style> 

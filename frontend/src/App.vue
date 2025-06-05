@@ -1,7 +1,11 @@
 <template>
   <div id="app">
     <el-config-provider :locale="zhCn">
-      <router-view />
+      <router-view v-slot="{ Component }">
+        <transition name="fade" mode="out-in">
+          <component :is="Component" />
+        </transition>
+      </router-view>
       <WebSocketStatus />
     </el-config-provider>
   </div>
@@ -13,22 +17,23 @@ import zhCn from 'element-plus/es/locale/lang/zh-cn'
 import WebSocketStatus from '@/components/WebSocketStatus.vue'
 </script>
 
-<style>
+<style lang="scss">
+@import '@/styles/global.scss';
+
 #app {
-  font-family: Avenir, Helvetica, Arial, sans-serif;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-  color: #2c3e50;
-}
-
-html,
-body {
-  margin: 0;
-  padding: 0;
   height: 100%;
+  min-height: 100vh;
+  background-color: $bg-color;
 }
 
-* {
-  box-sizing: border-box;
+// 页面切换动画
+.fade-enter-active,
+.fade-leave-active {
+  transition: opacity 0.3s ease;
+}
+
+.fade-enter-from,
+.fade-leave-to {
+  opacity: 0;
 }
 </style>
